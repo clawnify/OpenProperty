@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm db:migrate && concurrently -n ui,api -c cyan,green \"vite\" \"wrangler dev --port 8787\"",
-    "db:migrate": "wrangler d1 execute open-property-db --local --file=src/server/schema.sql",
+    "dev": "npm run db:migrate && concurrently -n ui,api -c cyan,green \"vite\" \"wrangler dev --port 8787\"",
+    "db:migrate": "wrangler d1 execute open-property-db --local --file=src/server/schema.sql --yes",
     "build": "vite build",
     "typecheck": "tsc --noEmit"
   },
