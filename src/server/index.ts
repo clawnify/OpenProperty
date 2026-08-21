@@ -1,14 +1,14 @@
-import { Hono, type Context } from "hono";
+import { createApp } from "@clawnify/app";
+import type { Context } from "hono";
 import { z } from "zod";
-import { initDB, query, get, run } from "./db";
+import { query, get, run } from "./db";
 
 type Env = { Bindings: { DB: D1Database } };
 
-const app = new Hono<Env>();
-
-app.use("*", async (c, next) => {
-  initDB(c.env);
-  await next();
+const app = createApp<Env>({
+  title: "Open Property",
+  version: "1.0.0",
+  description: "Property management: properties, units, tenants, leases, rent, and work orders",
 });
 
 // ── Helpers ────────────────────────────────────────────────────────
