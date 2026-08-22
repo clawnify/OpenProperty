@@ -1,7 +1,7 @@
 {
   "$schema": "https://app.clawnify.com/schema/v1/clawnify.json",
   "version": 1,
-  "name": "Open Property",
+  "name": "OpenProperty",
   "description": "Open-source property management software — a self-hosted, cloud-based alternative to TenantCloud, AppFolio, Buildium, and Propertyware. Rental property management for landlords, small property managers, and apartment / multi-family back-office teams: properties and units, tenants and leases, rent collection and ledger, work orders and maintenance, and a vendor directory.",
   "icon": "icon.svg",
   "tags": [

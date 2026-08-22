@@ -1,5 +1,5 @@
 {
-  "name": "Open Property",
+  "name": "OpenProperty",
   "description": "Open-source property management software — a self-hosted, cloud-based alternative to TenantCloud, AppFolio, Buildium, and Propertyware for landlords and small property managers. Rental property management with properties and units, tenants and leases, rent collection and ledger, work orders and maintenance, and a vendor directory.",
   "framework": "react+hono",
   "files": [
