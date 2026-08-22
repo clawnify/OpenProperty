@@ -1,6 +1,6 @@
-<img src="readme-banner.png" alt="Open Property preview" width="100%" />
+<img src="readme-banner.png" alt="OpenProperty preview" width="100%" />
 
-# Open Property
+# OpenProperty
 
 [![Deploy with Clawnify](https://app.clawnify.com/deploy-button.svg)](https://app.clawnify.com/deploy?repo=clawnify/open-property)
 
