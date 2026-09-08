@@ -5,10 +5,8 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-INSERT OR IGNORE INTO settings (key, value) VALUES ('default_rent_due_day', '1');
-INSERT OR IGNORE INTO settings (key, value) VALUES ('late_fee_amount', '50');
-INSERT OR IGNORE INTO settings (key, value) VALUES ('late_fee_grace_days', '5');
-INSERT OR IGNORE INTO settings (key, value) VALUES ('currency', 'USD');
+-- Defaults live in the app (DEFAULT_SETTINGS in src/server/index.ts): a
+-- deploy applies DDL only, so a seed row here fails the whole build.
 
 -- ── Properties (buildings) ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS properties (
@@ -168,47 +166,5 @@ CREATE TABLE IF NOT EXISTS applications (
 
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 
--- ── Seed data (only inserted on first run) ───────────────────────
-INSERT INTO properties (name, type, address, city, state, zip, color)
-SELECT 'Oakwood Estate', 'single_family', '210 Oakwood Ln', 'Austin', 'TX', '78704', 'emerald'
-WHERE NOT EXISTS (SELECT 1 FROM properties);
-
-INSERT INTO properties (name, type, address, city, state, zip, color)
-SELECT 'Honeybee Hideaway', 'single_family', '88 Bramble Ct', 'Austin', 'TX', '78704', 'amber'
-WHERE (SELECT COUNT(*) FROM properties) = 1;
-
-INSERT INTO properties (name, type, address, city, state, zip, color)
-SELECT '308 Mission Apartments', 'multi_family', '308 Mission St', 'Austin', 'TX', '78702', 'sky'
-WHERE (SELECT COUNT(*) FROM properties) = 2;
-
-INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status)
-SELECT 1, 'Main house', 3, 2, 1450, 2300, 'occupied'
-WHERE NOT EXISTS (SELECT 1 FROM units);
-
-INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status)
-SELECT 2, 'Main house', 2, 1, 980, 1700, 'occupied'
-WHERE (SELECT COUNT(*) FROM units) = 1;
-
-INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status)
-SELECT 3, 'Unit 1', 1, 1, 620, 1450, 'occupied'
-WHERE (SELECT COUNT(*) FROM units) = 2;
-
-INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status)
-SELECT 3, 'Unit 2', 1, 1, 620, 1450, 'vacant'
-WHERE (SELECT COUNT(*) FROM units) = 3;
-
-INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status)
-SELECT 3, 'Unit 3', 2, 1, 850, 1850, 'occupied'
-WHERE (SELECT COUNT(*) FROM units) = 4;
-
-INSERT INTO vendors (name, category, phone, color)
-SELECT 'Emerald Pool Service', 'general', '512-555-0144', 'emerald'
-WHERE NOT EXISTS (SELECT 1 FROM vendors);
-
-INSERT INTO vendors (name, category, phone, color)
-SELECT 'Hill Country Plumbing', 'plumber', '512-555-0188', 'sky'
-WHERE (SELECT COUNT(*) FROM vendors) = 1;
-
-INSERT INTO vendors (name, category, phone, color)
-SELECT 'Bright Spark Electric', 'electrician', '512-555-0102', 'amber'
-WHERE (SELECT COUNT(*) FROM vendors) = 2;
+-- Demo data is seeded by the app on first read (ensureSeeded in
+-- src/server/index.ts), never here: this file is applied as DDL only.

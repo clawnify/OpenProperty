@@ -8,8 +8,89 @@ const app = new Hono<Env>();
 
 app.use("*", async (c, next) => {
   initDB(c.env);
+  await ensureSeeded();
   await next();
 });
+
+// ── First-run data ─────────────────────────────────────────────────
+// A deploy applies `schema.sql` as DDL only — a seed INSERT there fails the
+// whole build — so the defaults and the sample portfolio are written here,
+// once, when their tables are still empty. A re-deploy never resurrects a
+// row the user deleted, because the table is no longer empty.
+
+const DEFAULT_SETTINGS: Record<string, string> = {
+  default_rent_due_day: "1",
+  late_fee_amount: "50",
+  late_fee_grace_days: "5",
+  currency: "USD",
+};
+
+const DEMO_PROPERTIES: Array<[string, string, string, string, string, string, string]> = [
+  ["Oakwood Estate", "single_family", "210 Oakwood Ln", "Austin", "TX", "78704", "emerald"],
+  ["Honeybee Hideaway", "single_family", "88 Bramble Ct", "Austin", "TX", "78704", "amber"],
+  ["308 Mission Apartments", "multi_family", "308 Mission St", "Austin", "TX", "78702", "sky"],
+];
+
+/** property index (into DEMO_PROPERTIES), name, beds, baths, sqft, rent, status */
+const DEMO_UNITS: Array<[number, string, number, number, number, number, string]> = [
+  [0, "Main house", 3, 2, 1450, 2300, "occupied"],
+  [1, "Main house", 2, 1, 980, 1700, "occupied"],
+  [2, "Unit 1", 1, 1, 620, 1450, "occupied"],
+  [2, "Unit 2", 1, 1, 620, 1450, "vacant"],
+  [2, "Unit 3", 2, 1, 850, 1850, "occupied"],
+];
+
+const DEMO_VENDORS: Array<[string, string, string, string]> = [
+  ["Emerald Pool Service", "general", "512-555-0144", "emerald"],
+  ["Hill Country Plumbing", "plumber", "512-555-0188", "sky"],
+  ["Bright Spark Electric", "electrician", "512-555-0102", "amber"],
+];
+
+let seeded = false; // per-isolate fast path; the COUNT re-checks are cheap
+
+async function ensureSeeded(): Promise<void> {
+  if (seeded) return;
+  seeded = true;
+  try {
+    for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+      await run("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", [key, value]);
+    }
+
+    const props = await get<{ n: number }>("SELECT COUNT(*) AS n FROM properties");
+    if ((props?.n ?? 0) === 0) {
+      const ids: number[] = [];
+      for (const p of DEMO_PROPERTIES) {
+        await run(
+          "INSERT INTO properties (name, type, address, city, state, zip, color) VALUES (?, ?, ?, ?, ?, ?, ?)",
+          p,
+        );
+        const row = await get<{ id: number }>("SELECT id FROM properties ORDER BY id DESC LIMIT 1");
+        ids.push(row?.id ?? 0);
+      }
+      const units = await get<{ n: number }>("SELECT COUNT(*) AS n FROM units");
+      if ((units?.n ?? 0) === 0) {
+        for (const [pi, name, beds, baths, sqft, rent, status] of DEMO_UNITS) {
+          if (!ids[pi]) continue;
+          await run(
+            "INSERT INTO units (property_id, name, bedrooms, bathrooms, sqft, market_rent, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            [ids[pi], name, beds, baths, sqft, rent, status],
+          );
+        }
+      }
+    }
+
+    const vendors = await get<{ n: number }>("SELECT COUNT(*) AS n FROM vendors");
+    if ((vendors?.n ?? 0) === 0) {
+      for (const v of DEMO_VENDORS) {
+        await run("INSERT INTO vendors (name, category, phone, color) VALUES (?, ?, ?, ?)", v);
+      }
+    }
+  } catch {
+    // A cold database mid-migration, or a table this build has not created
+    // yet: the next request retries. Never fail a request over sample data.
+    seeded = false;
+  }
+}
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -836,7 +917,9 @@ app.get("/api/dashboard/summary", async (c) => {
 
 app.get("/api/settings", async (c) => {
   const rows = await query<{ key: string; value: string }>("SELECT key, value FROM settings").catch(() => []);
-  const out: Record<string, string> = {};
+  // Defaults first, so a caller always gets a currency and a due day even if
+  // the seed has not run yet (a brand-new database, or a deleted row).
+  const out: Record<string, string> = { ...DEFAULT_SETTINGS };
   for (const r of rows) out[r.key] = r.value;
   return c.json({ settings: out });
 });
@@ -854,7 +937,7 @@ app.put("/api/settings", async (c) => {
     );
   }
   const rows = await query<{ key: string; value: string }>("SELECT key, value FROM settings");
-  const out: Record<string, string> = {};
+  const out: Record<string, string> = { ...DEFAULT_SETTINGS };
   for (const r of rows) out[r.key] = r.value;
   return c.json({ settings: out });
 });
