@@ -1,6 +1,11 @@
-onlyBuiltDependencies:
-  - esbuild
-  - workerd
+# pnpm 11 reads build permissions from here, not from package.json's `pnpm`
+# field, which it ignores.
 allowBuilds:
   esbuild: true
   workerd: true
+  # wrangler → miniflare pulls sharp for local image resizing. It never runs
+  # inside a Worker, so skip the native build rather than pay for it on every
+  # install (and on every deploy build).
+  sharp: false
+minimumReleaseAgeExclude:
+  - '@clawnify/app@0.2.1'
