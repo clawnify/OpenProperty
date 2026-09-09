@@ -8,13 +8,14 @@ import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PaymentDialog } from "./payment-dialog";
 import type { ChargeStatus, RentCharge } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const STATUS_TONE: Record<ChargeStatus, string> = {
-  open: "bg-sky-100 text-sky-800 border-sky-200",
-  partial: "bg-amber-100 text-amber-800 border-amber-200",
-  paid: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  overdue: "bg-rose-100 text-rose-800 border-rose-200",
-  waived: "bg-slate-100 text-slate-700 border-slate-200",
+  open: "bg-info-tint text-info",
+  partial: "bg-warning-tint text-warning",
+  paid: "bg-success-tint text-success",
+  overdue: "bg-destructive-tint text-destructive",
+  waived: "bg-muted text-muted-foreground",
 };
 
 export function RentPage() {
@@ -63,38 +64,41 @@ export function RentPage() {
   }, [charges]);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Rent ledger</h1>
-            <p className="text-sm text-muted-foreground">Charges and payments per period</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center rounded-md border bg-background p-1">
-              <Button variant="ghost" size="icon" onClick={() => setPeriod((p) => addMonths(p, -1))} aria-label="Previous month">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <button
-                type="button"
-                onClick={() => setPeriod(currentPeriod())}
-                className={cn(
-                  "rounded px-3 py-1.5 text-sm font-medium",
-                  period === currentPeriod() ? "bg-primary text-primary-foreground hover:bg-primary/90" : "hover:bg-accent",
-                )}
-              >
-                {formatPeriod(period)}
-              </button>
-              <Button variant="ghost" size="icon" onClick={() => setPeriod((p) => addMonths(p, 1))} aria-label="Next month">
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-            <Button onClick={generate} disabled={generating}>
-              <Sparkles className="mr-1 h-4 w-4" /> Generate charges
+    <PageShell
+      title="Rent ledger"
+      meta="Charges and payments per period"
+      actions={
+        <>
+          {/* The period stepper is view state, so it sits left of the one ink
+              action and names its current value rather than saying "Period". */}
+          <div className="inline-flex items-center rounded-full bg-muted p-[0.1875rem]">
+            <Button variant="ghost" size="icon" onClick={() => setPeriod((p) => addMonths(p, -1))} aria-label="Previous month">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <button
+              type="button"
+              onClick={() => setPeriod(currentPeriod())}
+              className={cn(
+                "rounded-sm px-3 py-1 text-sm font-medium transition-colors duration-150",
+                period === currentPeriod()
+                  ? "bg-card text-foreground shadow-raised"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {formatPeriod(period)}
+            </button>
+            <Button variant="ghost" size="icon" onClick={() => setPeriod((p) => addMonths(p, 1))} aria-label="Next month">
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </header>
-
+          {charges.length > 0 ? (
+            <Button onClick={generate} disabled={generating}>
+              <Sparkles className="h-4 w-4" /> Generate charges
+            </Button>
+          ) : null}
+        </>
+      }
+    >
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Stat label="Charged" value={formatMoney(totals.charged, app.settings.currency)} />
           <Stat label="Collected" value={formatMoney(totals.collected, app.settings.currency)} tone="positive" />
@@ -111,18 +115,26 @@ export function RentPage() {
         </section>
 
         {loading ? (
-          <Card className="p-8 text-center text-sm text-muted-foreground">Loading…</Card>
+          <Card className="divide-y divide-border overflow-hidden" role="status" aria-label="Loading rent charges">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex h-11 items-center gap-4 px-3" aria-hidden>
+                <div className="h-2.5 w-32 animate-pulse rounded-full bg-muted" />
+                <div className="h-2.5 w-24 animate-pulse rounded-full bg-muted" />
+                <div className="ml-auto h-2.5 w-16 animate-pulse rounded-full bg-muted" />
+              </div>
+            ))}
+          </Card>
         ) : charges.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 p-12 text-center">
-            <Receipt className="h-7 w-7 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+            <Receipt className="size-7 text-faint" aria-hidden />
             <p className="font-medium">No rent charges for {formatPeriod(period)}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               Generate charges from active leases for this month.
             </p>
             <Button className="mt-2" onClick={generate} disabled={generating}>
-              <Sparkles className="mr-1 h-4 w-4" /> Generate charges
+              <Sparkles className="size-4" /> Generate charges
             </Button>
-          </Card>
+          </div>
         ) : (
           <Card className="overflow-hidden">
             <Table>
@@ -160,7 +172,7 @@ export function RentPage() {
                       <TableCell className="text-sm text-muted-foreground">{formatDate(c.due_date)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatMoney(c.amount, app.settings.currency)}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatMoney(c.amount_paid, app.settings.currency)}</TableCell>
-                      <TableCell className={cn("text-right tabular-nums font-medium", balance > 0 && "text-amber-700", c.status === "overdue" && "text-rose-700")}>
+                      <TableCell className={cn("text-right tabular-nums font-medium", balance > 0 && "text-warning", c.status === "overdue" && "text-destructive")}>
                         {formatMoney(balance, app.settings.currency)}
                       </TableCell>
                       <TableCell>
@@ -187,7 +199,6 @@ export function RentPage() {
             </Table>
           </Card>
         )}
-      </div>
 
       <PaymentDialog
         open={paymentTarget !== null}
@@ -195,7 +206,7 @@ export function RentPage() {
         charge={paymentTarget}
         onSaved={load}
       />
-    </div>
+    </PageShell>
   );
 }
 
@@ -208,12 +219,12 @@ function Stat({
 }) {
   return (
     <Card className="p-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="stat-label">{label}</div>
       <div className={cn(
         "mt-1 text-xl font-semibold tabular-nums",
-        tone === "positive" && "text-emerald-700",
-        tone === "warn" && "text-amber-700",
-        tone === "danger" && "text-rose-700",
+        tone === "positive" && "text-success",
+        tone === "warn" && "text-warning",
+        tone === "danger" && "text-destructive",
       )}>
         {value}
       </div>

@@ -3,6 +3,7 @@ import { useApp } from "@/context";
 import { api } from "@/api";
 import { formatDate, formatMoney, toIsoDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,8 @@ const METHODS: { value: PaymentMethod; label: string }[] = [
 export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
   const app = useApp();
   const [amount, setAmount] = useState("0");
+  /** The payment awaiting confirmation — its id is the open state. */
+  const [confirming, setConfirming] = useState<number | null>(null);
   const [method, setMethod] = useState<PaymentMethod>("ach");
   const [paidAt, setPaidAt] = useState(toIsoDate(new Date()));
   const [reference, setReference] = useState("");
@@ -77,7 +80,6 @@ export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
   }
 
   async function deletePayment(id: number) {
-    if (!confirm("Delete this payment?")) return;
     try {
       await api("DELETE", `/api/payments/${id}`);
       setHistory((prev) => prev.filter((p) => p.id !== id));
@@ -87,10 +89,13 @@ export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
     }
   }
 
+  const pending = history.find((p) => p.id === confirming) ?? null;
+
   if (!charge) return null;
   const remaining = Math.max(0, (charge.amount ?? 0) - (charge.amount_paid ?? 0));
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -144,8 +149,8 @@ export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
 
         {history.length > 0 && (
           <div className="mt-2">
-            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Past payments</div>
-            <ul className="divide-y rounded-md border">
+            <div className="section-label mb-1.5">Past payments</div>
+            <ul className="divide-y divide-border overflow-hidden rounded-md shadow-edge">
               {history.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
                   <div>
@@ -155,8 +160,9 @@ export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
                   </div>
                   <button
                     type="button"
-                    className="text-xs text-muted-foreground hover:text-destructive"
-                    onClick={() => deletePayment(p.id)}
+                    className="text-xs text-muted-foreground transition-colors duration-150 hover:text-destructive"
+                    onClick={() => setConfirming(p.id)}
+                    aria-label={`Remove the ${formatMoney(p.amount, app.settings.currency)} payment from ${formatDate(p.paid_at)}`}
                   >
                     Remove
                   </button>
@@ -167,12 +173,28 @@ export function PaymentDialog({ open, onOpenChange, charge, onSaved }: Props) {
         )}
 
         <DialogFooter className="mt-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Close</Button>
           <Button type="button" onClick={save} disabled={saving || parseFloat(amount) <= 0}>
             Record payment
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      {pending ? (
+        <ConfirmDelete
+          open
+          onOpenChange={(o) => !o && setConfirming(null)}
+          title={`Remove the ${formatMoney(pending.amount, app.settings.currency)} payment?`}
+          description="The charge it was applied to goes back to its outstanding balance."
+          confirmLabel="Remove payment"
+          onConfirm={() => {
+            const id = pending.id;
+            setConfirming(null);
+            deletePayment(id);
+          }}
+        />
+      ) : null}
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { useApp } from "@/context";
 import { cn, colorClasses } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { Vendor, VendorCategory } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const COLORS = ["sky", "emerald", "amber", "rose", "violet", "fuchsia", "teal", "orange", "slate"];
 
@@ -33,12 +35,11 @@ const VENDOR_CATEGORIES: { value: VendorCategory; label: string }[] = [
 
 export function SettingsPage() {
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-5xl space-y-6 p-6">
-        <header>
-          <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-          <p className="text-sm text-muted-foreground">Vendors and rent policy defaults</p>
-        </header>
+    <PageShell
+      title="Settings"
+      meta="Vendors and rent policy defaults"
+      width="max-w-5xl"
+    >
 
         <Tabs defaultValue="vendors">
           <TabsList>
@@ -53,8 +54,7 @@ export function SettingsPage() {
             <PolicyTab />
           </TabsContent>
         </Tabs>
-      </div>
-    </div>
+    </PageShell>
   );
 }
 
@@ -94,7 +94,7 @@ function VendorsTab() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="capitalize">{v.category}</Badge>
+                  <Badge variant="neutral" className="capitalize">{v.category}</Badge>
                   <Button size="icon" variant="ghost" onClick={() => { setEditing(v); setOpen(true); }}>
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -124,6 +124,7 @@ function VendorDialog({
   const [color, setColor] = useState("slate");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -159,7 +160,6 @@ function VendorDialog({
 
   async function remove() {
     if (!vendor) return;
-    if (!confirm(`Delete ${vendor.name}?`)) return;
     try {
       await app.deleteVendor(vendor.id);
       onOpenChange(false);
@@ -169,6 +169,7 @@ function VendorDialog({
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -223,17 +224,28 @@ function VendorDialog({
         </div>
         <DialogFooter>
           {vendor && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               <Trash2 className="mr-1 h-4 w-4" /> Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !name.trim()}>
             {vendor ? "Save changes" : "Create"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      {vendor ? (
+        <ConfirmDelete
+          open={confirming}
+          onOpenChange={setConfirming}
+          title={`Delete ${vendor.name}?`}
+          description="Work orders already assigned to them keep the name on record."
+          onConfirm={remove}
+        />
+      ) : null}
+    </>
   );
 }
 

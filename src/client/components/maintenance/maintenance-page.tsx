@@ -8,12 +8,13 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WorkOrderDialog } from "./work-order-dialog";
 import type { WorkOrder, WorkOrderStatus } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const PRIORITY_TONE: Record<string, string> = {
-  urgent: "bg-rose-100 text-rose-800 border-rose-200",
-  high: "bg-amber-100 text-amber-800 border-amber-200",
-  normal: "bg-sky-100 text-sky-800 border-sky-200",
-  low: "bg-slate-100 text-slate-700 border-slate-200",
+  urgent: "bg-destructive-tint text-destructive",
+  high: "bg-warning-tint text-warning",
+  normal: "bg-info-tint text-info",
+  low: "bg-muted text-muted-foreground",
 };
 
 const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
@@ -65,24 +66,24 @@ export function MaintenancePage() {
   }, [orders, filter]);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Maintenance</h1>
-            <p className="text-sm text-muted-foreground">
-              {counts.open + counts.assigned + counts.in_progress} open
-              {counts.urgent > 0 && (
-                <span className="ml-2 inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-800">
-                  <CircleAlert className="h-3 w-3" /> {counts.urgent} urgent
-                </span>
-              )}
-            </p>
-          </div>
+    <PageShell
+      title="Maintenance"
+      meta={<>
+          {counts.open + counts.assigned + counts.in_progress} open
+          {counts.urgent > 0 && (
+            <span className="badge-tone tone-danger ml-2">
+              <CircleAlert className="h-3 w-3" /> {counts.urgent} urgent
+            </span>
+          )}
+        </>}
+      actions={
+        filtered.length > 0 ? (
           <Button onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-            <Plus className="mr-1 h-4 w-4" /> New work order
+            <Plus className="h-4 w-4" /> New work order
           </Button>
-        </header>
+        ) : null
+      }
+    >
 
         <Tabs value={filter} onValueChange={(v) => setFilter(v as never)}>
           <TabsList>
@@ -98,10 +99,10 @@ export function MaintenancePage() {
         {loading ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">Loading…</Card>
         ) : filtered.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 p-12 text-center">
-            <Wrench className="h-7 w-7 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+            <Wrench className="size-7 text-faint" aria-hidden />
             <p className="font-medium">Nothing here</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
               {orders.length === 0 ? "Track repairs and turnover work for your properties." : "No work orders match this filter."}
             </p>
             {orders.length === 0 && (
@@ -109,13 +110,13 @@ export function MaintenancePage() {
                 <Plus className="mr-1 h-4 w-4" /> New work order
               </Button>
             )}
-          </Card>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {filtered.map((w) => (
               <Card
                 key={w.id}
-                className="cursor-pointer p-4 transition-shadow hover:shadow-md"
+                className="cursor-pointer p-4 transition-colors duration-150 hover:bg-muted"
                 onClick={() => { setEditing(w); setDialogOpen(true); }}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -148,13 +149,12 @@ export function MaintenancePage() {
             ))}
           </div>
         )}
-      </div>
 
       <WorkOrderDialog
         open={dialogOpen}
         onOpenChange={(o) => { setDialogOpen(o); if (!o) load(); }}
         workOrder={editing}
       />
-    </div>
+    </PageShell>
   );
 }

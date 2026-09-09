@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PropertyDialog } from "./property-dialog";
 import type { Property } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const TYPE_LABEL: Record<string, string> = {
   single_family: "Single-family",
@@ -24,30 +25,29 @@ export function PropertiesList({ navigate }: { navigate: (to: string) => void })
   const occupied = properties.reduce((sum, p) => sum + (p.occupied_count ?? 0), 0);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Properties</h1>
-            <p className="text-sm text-muted-foreground">
-              {properties.length} propert{properties.length === 1 ? "y" : "ies"} · {totalUnits} unit{totalUnits === 1 ? "" : "s"} · {occupied}/{totalUnits || 0} occupied
-            </p>
-          </div>
+    <PageShell
+      title="Properties"
+      meta={`${properties.length} ${properties.length === 1 ? "property" : "properties"} · ${totalUnits} ${totalUnits === 1 ? "unit" : "units"} · ${occupied}/${totalUnits || 0} occupied`}
+      actions={
+        properties.length > 0 ? (
           <Button onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-            <Plus className="mr-1 h-4 w-4" />
+            <Plus className="h-4 w-4" />
             New property
           </Button>
-        </header>
-
-        {properties.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 p-16 text-center">
-            <Building2 className="h-8 w-8 text-muted-foreground" />
+        ) : null
+      }
+    >
+      {properties.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+            <Building2 className="size-8 text-faint" aria-hidden />
             <p className="font-medium">No properties yet</p>
-            <p className="text-sm text-muted-foreground">Add your first property to start managing units, leases, and rent.</p>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+              Add your first property to start managing units, leases, and rent.
+            </p>
             <Button className="mt-2" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-              <Plus className="mr-1 h-4 w-4" /> New property
+              <Plus className="h-4 w-4" /> New property
             </Button>
-          </Card>
+          </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {properties.map((p) => {
@@ -59,15 +59,15 @@ export function PropertiesList({ navigate }: { navigate: (to: string) => void })
                 <Card
                   key={p.id}
                   className={cn(
-                    "group relative cursor-pointer overflow-hidden p-5 transition-shadow hover:shadow-md",
+                    "group relative cursor-pointer overflow-hidden p-5 transition-colors duration-150 hover:bg-muted",
                   )}
                   onClick={() => navigate(`/properties/${p.id}`)}
                 >
                   <div className="mb-3 flex items-start justify-between">
-                    <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", palette.bg, palette.text)}>
-                      <Building2 className="h-5 w-5" />
+                    <div className={cn("flex size-10 items-center justify-center rounded-md", palette.bg, palette.text)}>
+                      <Building2 className="size-5" />
                     </div>
-                    <span className="rounded-full border bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                    <span className="chip">
                       {TYPE_LABEL[p.type] ?? p.type}
                     </span>
                   </div>
@@ -97,24 +97,23 @@ export function PropertiesList({ navigate }: { navigate: (to: string) => void })
                   </div>
                 </Card>
               );
-            })}
-          </div>
-        )}
-      </div>
+          })}
+        </div>
+      )}
 
       <PropertyDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         property={editing}
       />
-    </div>
+    </PageShell>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
     <div>
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="stat-label">{label}</div>
       <div className="mt-0.5 text-base font-semibold tabular-nums">{value}</div>
     </div>
   );

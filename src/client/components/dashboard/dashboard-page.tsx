@@ -14,6 +14,7 @@ import { cn, daysBetween, formatDate, formatMoney, toIsoDate } from "@/lib/utils
 import type { DashboardSummary } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { PageShell } from "@/components/page-shell";
 
 export function DashboardPage({ navigate }: { navigate: (to: string) => void }) {
   const { settings, setError } = useApp();
@@ -45,16 +46,10 @@ export function DashboardPage({ navigate }: { navigate: (to: string) => void }) 
   }
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Snapshot of {new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}
-            </p>
-          </div>
-        </header>
+    <PageShell
+      title="Dashboard"
+      meta={`Snapshot of ${new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" })}`}
+    >
 
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <KpiCard
@@ -202,7 +197,7 @@ export function DashboardPage({ navigate }: { navigate: (to: string) => void }) 
                         <div className="font-medium text-foreground">{formatDate(l.end_date)}</div>
                         <div className={cn(
                           "text-muted-foreground",
-                          days <= 14 && "text-rose-600 font-medium",
+                          days <= 14 && "text-destructive font-medium",
                         )}>
                           {days < 0 ? "Already ended" : days === 0 ? "Today" : `in ${days} day${days === 1 ? "" : "s"}`}
                         </div>
@@ -214,8 +209,7 @@ export function DashboardPage({ navigate }: { navigate: (to: string) => void }) 
             )}
           </Card>
         </section>
-      </div>
-    </div>
+    </PageShell>
   );
 }
 
@@ -229,18 +223,25 @@ function KpiCard({
   tone?: "default" | "warn";
 }) {
   return (
-    <Card className="p-5">
-      <div className="mb-3 flex items-center gap-2 text-muted-foreground">
-        <span className={cn(
-          "flex h-7 w-7 items-center justify-center rounded-md",
-          tone === "warn" ? "bg-amber-100 text-amber-700" : "bg-primary/10 text-primary",
-        )}>
-          {icon}
-        </span>
-        <span className="text-xs font-medium uppercase tracking-wider">{label}</span>
+    <Card className={cn("relative px-3 py-2.5", tone === "warn" && "bg-warning-tint")}>
+      <span
+        className={cn(
+          "absolute right-3 top-2.5 opacity-50",
+          tone === "warn" ? "text-warning" : "text-muted-foreground",
+        )}
+        aria-hidden
+      >
+        {icon}
+      </span>
+      <div className={cn(
+        "data text-[1.375rem] font-semibold leading-tight tracking-[-0.01em]",
+        tone === "warn" && "text-warning",
+      )}>
+        {value}
       </div>
-      <div className="text-2xl font-semibold tracking-tight">{value}</div>
-      {sub && <div className="mt-1 text-xs text-muted-foreground">{sub}</div>}
+      <div className="section-label mt-0.5">{label}</div>
+      {/* Fixed height: toggling the comparison line must never shift the row. */}
+      <div className="mt-1 h-4 truncate text-xs text-muted-foreground">{sub}</div>
     </Card>
   );
 }
@@ -261,9 +262,9 @@ function Row({
       </dt>
       <dd className={cn(
         "font-medium tabular-nums",
-        tone === "positive" && "text-emerald-700",
-        tone === "warn" && "text-amber-700",
-        tone === "danger" && "text-rose-700",
+        tone === "positive" && "text-success",
+        tone === "warn" && "text-warning",
+        tone === "danger" && "text-destructive",
       )}>
         {value}
       </dd>
@@ -281,12 +282,12 @@ function Stat({
 }) {
   return (
     <div>
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="stat-label">{label}</div>
       <div className={cn(
         "mt-1 text-xl font-semibold tabular-nums",
-        tone === "positive" && "text-emerald-700",
-        tone === "warn" && "text-amber-700",
-        tone === "danger" && "text-rose-700",
+        tone === "positive" && "text-success",
+        tone === "warn" && "text-warning",
+        tone === "danger" && "text-destructive",
       )}>
         {value}
       </div>
@@ -313,10 +314,10 @@ function Empty({
 
 function PriorityBadge({ priority }: { priority: string }) {
   const map: Record<string, string> = {
-    urgent: "bg-rose-100 text-rose-800 border-rose-200",
-    high: "bg-amber-100 text-amber-800 border-amber-200",
-    normal: "bg-sky-100 text-sky-800 border-sky-200",
-    low: "bg-slate-100 text-slate-700 border-slate-200",
+    urgent: "bg-destructive-tint text-destructive",
+    high: "bg-warning-tint text-warning",
+    normal: "bg-info-tint text-info",
+    low: "bg-muted text-muted-foreground",
   };
   return (
     <span className={cn(

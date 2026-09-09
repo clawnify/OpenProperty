@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,7 @@ const STATUSES: { value: UnitStatus; label: string }[] = [
 export function UnitDialog({ open, onOpenChange, propertyId, unit, onSaved }: Props) {
   const app = useApp();
   const [name, setName] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const [bedrooms, setBedrooms] = useState("1");
   const [bathrooms, setBathrooms] = useState("1");
   const [sqft, setSqft] = useState("");
@@ -75,7 +77,6 @@ export function UnitDialog({ open, onOpenChange, propertyId, unit, onSaved }: Pr
 
   async function remove() {
     if (!unit) return;
-    if (!confirm(`Delete unit "${unit.name}"? This will also delete leases and rent history for this unit.`)) return;
     try {
       await app.deleteUnit(unit.id);
       onSaved?.();
@@ -86,6 +87,7 @@ export function UnitDialog({ open, onOpenChange, propertyId, unit, onSaved }: Pr
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -132,16 +134,27 @@ export function UnitDialog({ open, onOpenChange, propertyId, unit, onSaved }: Pr
         </div>
         <DialogFooter className="mt-2">
           {unit && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !name.trim()}>
             {unit ? "Save changes" : "Create unit"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      {unit ? (
+        <ConfirmDelete
+          open={confirming}
+          onOpenChange={setConfirming}
+          title={`Delete unit "${unit.name}"?`}
+          description="Its leases and rent history go with it. This cannot be undone."
+          onConfirm={remove}
+        />
+      ) : null}
+    </>
   );
 }

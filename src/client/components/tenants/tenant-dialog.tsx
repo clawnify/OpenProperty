@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ interface Props {
 export function TenantDialog({ open, onOpenChange, tenant, onSaved }: Props) {
   const app = useApp();
   const [firstName, setFirstName] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -69,7 +71,6 @@ export function TenantDialog({ open, onOpenChange, tenant, onSaved }: Props) {
 
   async function remove() {
     if (!tenant) return;
-    if (!confirm(`Delete ${tenant.first_name} ${tenant.last_name}? Their leases and rent history will also be removed.`)) return;
     try {
       await app.deleteTenant(tenant.id);
       onOpenChange(false);
@@ -79,6 +80,7 @@ export function TenantDialog({ open, onOpenChange, tenant, onSaved }: Props) {
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -132,16 +134,27 @@ export function TenantDialog({ open, onOpenChange, tenant, onSaved }: Props) {
         </div>
         <DialogFooter className="mt-2">
           {tenant && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !firstName.trim() || !lastName.trim()}>
             {tenant ? "Save changes" : "Create tenant"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      {tenant ? (
+        <ConfirmDelete
+          open={confirming}
+          onOpenChange={setConfirming}
+          title={`Delete ${tenant.first_name} ${tenant.last_name}?`}
+          description="Their leases and rent history go with them. This cannot be undone."
+          onConfirm={remove}
+        />
+      ) : null}
+    </>
   );
 }

@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeaseDialog } from "./lease-dialog";
 import type { Lease, LeaseStatus } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const STATUS_TONE: Record<string, string> = {
   active: "default",
@@ -54,17 +55,17 @@ export function LeasesPage({ navigate }: { navigate: (to: string) => void }) {
   }, [leases, filter, q]);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Leases</h1>
-            <p className="text-sm text-muted-foreground">{leases.length} total · {leases.filter((l) => l.status === "active").length} active</p>
-          </div>
+    <PageShell
+      title="Leases"
+      meta={`${leases.length} total · ${leases.filter((l) => l.status === "active").length} active`}
+      actions={
+        leases.length > 0 ? (
           <Button onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-            <Plus className="mr-1 h-4 w-4" /> New lease
+            <Plus className="h-4 w-4" /> New lease
           </Button>
-        </header>
+        ) : null
+      }
+    >
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <Tabs value={filter} onValueChange={(v) => setFilter(v as LeaseStatus | "all")}>
@@ -84,16 +85,16 @@ export function LeasesPage({ navigate }: { navigate: (to: string) => void }) {
         {loading ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">Loading…</Card>
         ) : filtered.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 p-12 text-center">
-            <ClipboardList className="h-7 w-7 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+            <ClipboardList className="size-7 text-faint" aria-hidden />
             <p className="font-medium">No leases here</p>
-            <p className="text-sm text-muted-foreground">{leases.length === 0 ? "Create your first lease to start collecting rent." : "Try a different filter."}</p>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{leases.length === 0 ? "Create your first lease to start collecting rent." : "Try a different filter."}</p>
             {leases.length === 0 && (
               <Button className="mt-2" onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
                 <Plus className="mr-1 h-4 w-4" /> New lease
               </Button>
             )}
-          </Card>
+          </div>
         ) : (
           <Card className="overflow-hidden">
             <Table>
@@ -139,7 +140,7 @@ export function LeasesPage({ navigate }: { navigate: (to: string) => void }) {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">{formatDate(l.start_date)} → {formatDate(l.end_date)}</div>
-                        {ending && <div className="text-xs text-amber-700">Ends in {daysToEnd} day{daysToEnd === 1 ? "" : "s"}</div>}
+                        {ending && <div className="text-xs text-warning">Ends in {daysToEnd} day{daysToEnd === 1 ? "" : "s"}</div>}
                       </TableCell>
                       <TableCell className="text-right tabular-nums">{formatMoney(l.monthly_rent, app.settings.currency)}/mo</TableCell>
                       <TableCell>
@@ -154,13 +155,12 @@ export function LeasesPage({ navigate }: { navigate: (to: string) => void }) {
             </Table>
           </Card>
         )}
-      </div>
 
       <LeaseDialog
         open={dialogOpen}
         onOpenChange={(o) => { setDialogOpen(o); if (!o) load(); }}
         lease={editing}
       />
-    </div>
+    </PageShell>
   );
 }
