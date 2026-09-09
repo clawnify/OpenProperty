@@ -65,8 +65,10 @@ export function App() {
 
   return (
     <AppContext.Provider value={state}>
-      <div className="flex h-screen min-h-0 overflow-hidden bg-background text-foreground">
-        {/* flex, so the SDK's <aside> stretches to the row height as a direct child would */}
+      <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-background text-foreground md:flex-row">
+        {/* flex, so the SDK's <aside> stretches to the row height as a direct
+            child would. Below md the SDK lays it out as a scrolling strip, which
+            the flex-col above puts ABOVE the content rather than beside it. */}
         <div className="flex shrink-0">
           <AppNav
             title="OpenProperty"
