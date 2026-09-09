@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useApp } from "@/context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +35,7 @@ const STATUSES: { value: WorkOrderStatus; label: string }[] = [
 export function WorkOrderDialog({ open, onOpenChange, workOrder, defaults, onSaved }: Props) {
   const app = useApp();
   const [units, setUnits] = useState<Unit[]>([]);
+  const [confirming, setConfirming] = useState(false);
   const [propertyId, setPropertyId] = useState<number | "">("");
   const [unitId, setUnitId] = useState<number | "">("");
   const [vendorId, setVendorId] = useState<number | "">("");
@@ -117,7 +119,6 @@ export function WorkOrderDialog({ open, onOpenChange, workOrder, defaults, onSav
 
   async function remove() {
     if (!workOrder) return;
-    if (!confirm("Delete this work order?")) return;
     try {
       await app.deleteWorkOrder(workOrder.id);
       onSaved?.();
@@ -128,6 +129,7 @@ export function WorkOrderDialog({ open, onOpenChange, workOrder, defaults, onSav
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
@@ -216,16 +218,25 @@ export function WorkOrderDialog({ open, onOpenChange, workOrder, defaults, onSav
 
         <DialogFooter className="mt-2">
           {workOrder && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !title.trim()}>
             {workOrder ? "Save changes" : "Create work order"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      <ConfirmDelete
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="Delete this work order?"
+        description="Its history and notes go with it. This cannot be undone."
+        onConfirm={remove}
+      />
+    </>
   );
 }

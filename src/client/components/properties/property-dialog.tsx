@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useApp } from "@/context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ const COLORS = ["sky", "emerald", "amber", "rose", "violet", "fuchsia", "teal", 
 export function PropertyDialog({ open, onOpenChange, property, onSaved }: Props) {
   const app = useApp();
   const [name, setName] = useState("");
+  const [confirming, setConfirming] = useState(false);
   const [type, setType] = useState<PropertyType>("single_family");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -80,7 +82,6 @@ export function PropertyDialog({ open, onOpenChange, property, onSaved }: Props)
 
   async function remove() {
     if (!property) return;
-    if (!confirm(`Delete "${property.name}"? This will also delete its units, leases, and rent history.`)) return;
     try {
       await app.deleteProperty(property.id);
       onOpenChange(false);
@@ -90,6 +91,7 @@ export function PropertyDialog({ open, onOpenChange, property, onSaved }: Props)
   }
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
@@ -158,16 +160,27 @@ export function PropertyDialog({ open, onOpenChange, property, onSaved }: Props)
 
         <DialogFooter className="mt-2">
           {property && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !name.trim()}>
             {property ? "Save changes" : "Create property"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      {property ? (
+        <ConfirmDelete
+          open={confirming}
+          onOpenChange={setConfirming}
+          title={`Delete "${property.name}"?`}
+          description="Its units, leases, and rent history go with it. This cannot be undone."
+          onConfirm={remove}
+        />
+      ) : null}
+    </>
   );
 }

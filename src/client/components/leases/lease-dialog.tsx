@@ -3,6 +3,7 @@ import { useApp } from "@/context";
 import { api } from "@/api";
 import { toIsoDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ const STATUSES: { value: LeaseStatus; label: string }[] = [
 export function LeaseDialog({ open, onOpenChange, lease, defaults, onSaved }: Props) {
   const app = useApp();
   const [units, setUnits] = useState<Unit[]>([]);
+  const [confirming, setConfirming] = useState(false);
   const [tenants, setTenants] = useState<Tenant[]>([]);
 
   const [unitId, setUnitId] = useState<number | "">("");
@@ -114,7 +116,6 @@ export function LeaseDialog({ open, onOpenChange, lease, defaults, onSaved }: Pr
 
   async function remove() {
     if (!lease) return;
-    if (!confirm("Delete this lease? Rent charges and payments tied to it will also be removed.")) return;
     try {
       await app.deleteLease(lease.id);
       onSaved?.();
@@ -145,6 +146,7 @@ export function LeaseDialog({ open, onOpenChange, lease, defaults, onSaved }: Pr
   }, [open]);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
@@ -225,16 +227,25 @@ export function LeaseDialog({ open, onOpenChange, lease, defaults, onSaved }: Pr
         </div>
         <DialogFooter className="mt-2">
           {lease && (
-            <Button type="button" variant="ghost" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={remove}>
+            <Button type="button" variant="destructive" className="sm:mr-auto" onClick={() => setConfirming(true)}>
               Delete
             </Button>
           )}
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button type="button" onClick={save} disabled={saving || !unitId || !start || !end}>
             {lease ? "Save changes" : "Create lease"}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+      <ConfirmDelete
+        open={confirming}
+        onOpenChange={setConfirming}
+        title="Delete this lease?"
+        description="The rent charges and payments tied to it go with it. This cannot be undone."
+        onConfirm={remove}
+      />
+    </>
   );
 }

@@ -10,6 +10,7 @@ import { PropertyDialog } from "./property-dialog";
 import { UnitDialog } from "./unit-dialog";
 import { WorkOrderDialog } from "../maintenance/work-order-dialog";
 import type { Property, Unit, WorkOrder } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 const TYPE_LABEL: Record<string, string> = {
   single_family: "Single-family",
@@ -20,10 +21,10 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 const STATUS_TONE: Record<string, string> = {
-  vacant: "bg-amber-100 text-amber-800 border-amber-200",
-  occupied: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  turnover: "bg-sky-100 text-sky-800 border-sky-200",
-  unavailable: "bg-slate-100 text-slate-700 border-slate-200",
+  vacant: "bg-warning-tint text-warning",
+  occupied: "bg-success-tint text-success",
+  turnover: "bg-info-tint text-info",
+  unavailable: "bg-muted text-muted-foreground",
 };
 
 export function PropertyPage({ id, navigate }: { id: number; navigate: (to: string) => void }) {
@@ -82,26 +83,27 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
   const openWorkOrders = workOrders.filter((w) => w.status !== "completed" && w.status !== "cancelled");
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-7xl space-y-6 p-6">
-        <div>
-          <button
-            type="button"
-            onClick={() => navigate("/properties")}
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-3 w-3" /> Properties
-          </button>
-        </div>
-
+    <PageShell
+      title={
+        <button
+          type="button"
+          onClick={() => navigate("/properties")}
+          className="inline-flex items-center gap-1.5 text-[1.375rem] font-semibold leading-tight tracking-[-0.01em] transition-colors duration-150 hover:text-muted-foreground"
+        >
+          <ArrowLeft className="size-4 text-muted-foreground" aria-hidden />
+          Properties
+        </button>
+      }
+      width="max-w-7xl"
+    >
         <header className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className={cn("flex h-12 w-12 items-center justify-center rounded-lg", palette.bg, palette.text)}>
-              <Building2 className="h-6 w-6" />
+            <div className={cn("flex size-12 items-center justify-center rounded-md", palette.bg, palette.text)}>
+              <Building2 className="size-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">{property.name}</h1>
+                <h1 className="text-[1.375rem] font-semibold leading-tight tracking-[-0.01em]">{property.name}</h1>
                 <span className="rounded-full border bg-muted/30 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   {TYPE_LABEL[property.type] ?? property.type}
                 </span>
@@ -128,7 +130,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
 
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Units</h2>
+            <h2 className="text-[1.0625rem] font-semibold leading-tight">Units</h2>
             <Button size="sm" onClick={() => { setEditingUnit(undefined); setUnitDialogOpen(true); }}>
               <Plus className="mr-1 h-4 w-4" /> New unit
             </Button>
@@ -140,7 +142,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
           ) : (
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
               {units.map((u) => (
-                <Card key={u.id} className="cursor-pointer p-4 transition-shadow hover:shadow-md" onClick={() => { setEditingUnit(u); setUnitDialogOpen(true); }}>
+                <Card key={u.id} className="cursor-pointer p-4 transition-colors duration-150 hover:bg-muted" onClick={() => { setEditingUnit(u); setUnitDialogOpen(true); }}>
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="font-semibold">{u.name}</h3>
@@ -154,7 +156,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
                   </div>
                   <div className="mt-3 flex items-end justify-between border-t pt-3">
                     <div>
-                      <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Market rent</div>
+                      <div className="stat-label">Market rent</div>
                       <div className="text-sm font-semibold tabular-nums">{formatMoney(u.market_rent, app.settings.currency)}</div>
                     </div>
                     {u.active_tenant_name && (
@@ -169,7 +171,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
 
         <section>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Work orders</h2>
+            <h2 className="text-[1.0625rem] font-semibold leading-tight">Work orders</h2>
             <Button size="sm" variant="outline" onClick={() => setWoDialogOpen(true)}>
               <Plus className="mr-1 h-4 w-4" /> New work order
             </Button>
@@ -190,7 +192,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
-                    <Badge variant="outline" className="capitalize">{w.priority}</Badge>
+                    <Badge variant="neutral" className="capitalize">{w.priority}</Badge>
                     <Badge variant="secondary" className="capitalize">{w.status.replace("_", " ")}</Badge>
                   </div>
                 </div>
@@ -198,7 +200,6 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
             </Card>
           )}
         </section>
-      </div>
 
       <PropertyDialog
         open={editingProperty}
@@ -216,15 +217,15 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
         onOpenChange={(o) => { setWoDialogOpen(o); if (!o) load(); }}
         defaults={{ property_id: property.id }}
       />
-    </div>
+    </PageShell>
   );
 }
 
 function SummaryCard({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "warn" }) {
   return (
     <Card className="p-4">
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className={cn("mt-1 text-xl font-semibold tabular-nums", tone === "warn" && "text-amber-700")}>{value}</div>
+      <div className="stat-label">{label}</div>
+      <div className={cn("mt-1 text-xl font-semibold tabular-nums", tone === "warn" && "text-warning")}>{value}</div>
     </Card>
   );
 }

@@ -51,20 +51,22 @@ export function Sidebar({
   navigate: (to: string) => void;
 }) {
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Home className="h-4 w-4" />
+    <aside className="hidden w-[17.1875rem] shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+      {/* The brand row and the page toolbar are both 56px, so their bottoms
+          form one continuous line across the shell. */}
+      <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
+        <div className="app-icon size-7">
+          <Home className="size-4" />
         </div>
-        <span className="text-base font-semibold tracking-tight">OpenProperty</span>
+        <span className="text-[0.9375rem] font-semibold tracking-tight">OpenProperty</span>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {sections.map((section) => (
           <div key={section.heading} className="mb-4">
-            <div className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {section.heading}
-            </div>
+            {/* Sentence case, not small caps: the 11px tracked style is only
+                ever the label above a KPI number. */}
+            <div className="section-label px-2 pb-1">{section.heading}</div>
             <ul className="space-y-0.5">
               {section.items.map((item) => {
                 const active = item.match(route);
@@ -74,12 +76,15 @@ export function Sidebar({
                       type="button"
                       onClick={() => navigate(item.path)}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        // 28px, 9px radius, 14px/500 — and the active row is a
+                        // NEUTRAL ink wash, never the brand hue: colour in the
+                        // rail is reserved for counts.
+                        "flex h-7 w-full items-center gap-1.5 rounded-[0.5625rem] py-0 pl-2 pr-4 text-sm font-medium transition-colors duration-150",
                         active && "bg-sidebar-accent text-sidebar-accent-foreground",
-                        !active && "hover:bg-sidebar-accent/60",
+                        !active && "hover:bg-sidebar-accent",
                       )}
                     >
-                      <item.icon className="h-4 w-4 shrink-0" />
+                      <item.icon className="size-4 shrink-0" />
                       <span className="flex-1 text-left">{item.label}</span>
                     </button>
                   </li>

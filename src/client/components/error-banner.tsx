@@ -5,7 +5,7 @@ export function ErrorBanner() {
   const { error, setError } = useApp();
   if (!error) return null;
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 flex w-[min(90vw,520px)] -translate-x-1/2 items-start gap-3 rounded-md border border-destructive/30 bg-destructive px-4 py-3 text-sm text-destructive-foreground shadow-lg">
+    <div className="fixed bottom-4 left-1/2 z-50 flex w-[min(90vw,520px)] -translate-x-1/2 items-start gap-3 rounded-md bg-destructive-tint px-4 py-3 text-sm text-destructive shadow-float">
       <span className="flex-1">{error}</span>
       <button
         type="button"

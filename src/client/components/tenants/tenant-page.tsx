@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TenantDialog } from "./tenant-dialog";
 import type { Lease, Tenant } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 export function TenantPage({ id, navigate }: { id: number; navigate: (to: string) => void }) {
   const app = useApp();
@@ -52,25 +53,26 @@ export function TenantPage({ id, navigate }: { id: number; navigate: (to: string
   const activeLease = leases.find((l) => l.status === "active");
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-5xl space-y-6 p-6">
-        <div>
-          <button
-            type="button"
-            onClick={() => navigate("/tenants")}
-            className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-3 w-3" /> Tenants
-          </button>
-        </div>
-
+    <PageShell
+      title={
+        <button
+          type="button"
+          onClick={() => navigate("/tenants")}
+          className="inline-flex items-center gap-1.5 text-[1.375rem] font-semibold leading-tight tracking-[-0.01em] transition-colors duration-150 hover:text-muted-foreground"
+        >
+          <ArrowLeft className="size-4 text-muted-foreground" aria-hidden />
+          Tenants
+        </button>
+      }
+      width="max-w-5xl"
+    >
         <header className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <div className="flex size-12 items-center justify-center rounded-md bg-muted text-muted-foreground">
               <User className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{tenant.first_name} {tenant.last_name}</h1>
+              <h1 className="text-[1.375rem] font-semibold leading-tight tracking-[-0.01em]">{tenant.first_name} {tenant.last_name}</h1>
               <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 {tenant.email && <span className="inline-flex items-center gap-1"><Mail className="h-3 w-3" /> {tenant.email}</span>}
                 {tenant.phone && <span className="inline-flex items-center gap-1"><Phone className="h-3 w-3" /> {tenant.phone}</span>}
@@ -84,7 +86,7 @@ export function TenantPage({ id, navigate }: { id: number; navigate: (to: string
 
         {activeLease && (
           <Card className="p-5">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Active lease</div>
+            <div className="text-[1.0625rem] font-semibold leading-tight">Active lease</div>
             <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-4">
               <Field label="Property">{activeLease.property_name ?? "—"}</Field>
               <Field label="Unit">{activeLease.unit_name ?? "—"}</Field>
@@ -97,7 +99,7 @@ export function TenantPage({ id, navigate }: { id: number; navigate: (to: string
         )}
 
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">About</h2>
+          <h2 className="mb-3 text-[1.0625rem] font-semibold leading-tight">About</h2>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <Field label="Date of birth">{tenant.date_of_birth ? formatDate(tenant.date_of_birth) : "—"}</Field>
             <Field label="Emergency contact">{tenant.emergency_contact || "—"}</Field>
@@ -108,14 +110,14 @@ export function TenantPage({ id, navigate }: { id: number; navigate: (to: string
           </div>
           {tenant.notes && (
             <>
-              <div className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Notes</div>
+              <div className="mt-4 text-[0.9375rem] font-semibold leading-tight">Notes</div>
               <p className="mt-1 whitespace-pre-wrap text-sm">{tenant.notes}</p>
             </>
           )}
         </Card>
 
         <Card className="p-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Lease history</h2>
+          <h2 className="mb-3 text-[1.0625rem] font-semibold leading-tight">Lease history</h2>
           {leases.length === 0 ? (
             <p className="text-sm text-muted-foreground">No leases yet.</p>
           ) : (
@@ -136,21 +138,20 @@ export function TenantPage({ id, navigate }: { id: number; navigate: (to: string
             </ul>
           )}
         </Card>
-      </div>
 
       <TenantDialog
         open={editing}
         onOpenChange={(o) => { setEditing(o); if (!o) load(); }}
         tenant={tenant}
       />
-    </div>
+    </PageShell>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="section-label">{label}</div>
       <div className="mt-0.5 text-sm font-medium">{children}</div>
     </div>
   );

@@ -1,12 +1,138 @@
 @import "tailwindcss";
-@import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Clawnify Apps design tokens (apps/api/src/instructions/apps/DESIGN.md).
+ *
+ * Every chromatic value is oklch(L, C% of the sRGB gamut maximum at that L and
+ * hue, H): L and C come from the ROLE (tint / text / solid), only the hue comes
+ * from the MEANING. Generated with scripts/apps-design-palette.py in the
+ * platform repo and contrast-verified there, both appearances — do not
+ * hand-tune a hex to "look right".
+ *
+ * The variable NAMES stay shadcn's, because the primitives in components/ui
+ * are shadcn and reference them; what changed is which ROLE each one carries.
+ * Two of those mappings are easy to get backwards:
+ *   --muted            is a SURFACE (shadcn's `bg-muted`)  → surface-sunken
+ *   --muted-foreground is the muted TEXT colour            → muted
+ *   --accent           is shadcn's NEUTRAL hover fill, not the app's hue.
+ * The app's own hue lives in --brand-*, so `hover:bg-accent` on a ghost button
+ * stays a grey wash instead of turning the whole app green.
+ */
+:root {
+  /* ── Surfaces (warm neutral, hue 85 — never blue-gray) ── */
+  --background: #ffffff;          /* oklch(1 0 0) */
+  --foreground: #1b1a19;          /* oklch(0.22 0.002 85) */
+  --card: #ffffff;                /* cards are the same white; the BORDER separates them */
+  --card-foreground: #1b1a19;
+  --popover: #ffffff;
+  --popover-foreground: #1b1a19;
+  --muted: #f7f7f5;               /* oklch(0.975 0.002 85): a 2.5% step, not a 5% one */
+  --muted-foreground: #646360;    /* oklch(0.5 0.005 85) */
+  --faint: #9a9893;               /* oklch(0.68 0.007 85): placeholders and disabled only */
+  --border: #e5e3de;              /* oklch(0.915 0.007 85) */
+  --input: #e5e3de;
 
-/* Color tokens for property/vendor/work-order cards & badges referenced dynamically.
-   Keeping them in @source ensures Tailwind emits utilities even though class names
-   are composed at runtime. */
-@source inline("{bg,text,ring,border}-{sky,rose,amber,emerald,violet,fuchsia,teal,orange,slate}-{50,100,200,300,400,500,600,700,800}");
+  /* ── Action: the ONE solid button per screen is ink, not the brand hue ── */
+  --primary: #1b1a19;
+  --primary-foreground: #ffffff;
+  /* Secondary is white with a raised shadow ring rather than a border. */
+  --secondary: #ffffff;
+  --secondary-foreground: #1b1a19;
+  /* shadcn's neutral hover wash — deliberately NOT the brand. */
+  --accent: #f7f7f5;
+  --accent-foreground: #1b1a19;
+
+  /* ── Brand: OpenProperty's own hue (H 149.2, from icon.svg #16A34A). ──
+     It appears in exactly three places — the app icon, count badges, and the
+     focus ring — and never as a status badge. */
+  --brand: #31974e;               /* solid  L 0.60 C 85% */
+  --brand-hover: #287f41;         /* L 0.53 */
+  --brand-tint: #dcf9e0;          /* L 0.955 C 60% */
+  --brand-text: #2b6037;          /* L 0.44 C 70% — passes on the tint and on white */
+  --on-brand: #ffffff;
+  --ring: #31974e;                /* focus ring = the brand solid */
+
+  /* ── Status: hue only differs; L and C% are shared across all four ── */
+  --info: #173ec4;
+  --info-tint: #ecf0f9;
+  --info-solid: #4977ed;
+  --success: #2b5f3c;
+  --success-tint: #dbf9e2;
+  --success-solid: #319656;
+  --warning: #664e27;
+  --warning-tint: #f9efdf;
+  --warning-solid: #a3772b;
+  --destructive: #8a2f2d;         /* the TEXT role: danger text on its tint */
+  --destructive-tint: #f9edec;
+  --destructive-solid: #e1363a;   /* the fill a danger button takes on hover */
+  --destructive-foreground: #ffffff;
+
+  /* ── The rail: surface-sunken, and its active row is a neutral ink wash.
+        Colour in the sidebar is reserved for counts, never for location. ── */
+  --sidebar: #f7f7f5;
+  --sidebar-foreground: #1b1a19;
+  --sidebar-accent: rgba(0, 0, 0, 0.04);
+  --sidebar-accent-foreground: #1b1a19;
+  --sidebar-border: #e5e3de;
+
+  /* Three edge recipes. Resting is an INSET ring: it costs no layout, so a
+     focus state can thicken it without shifting a pixel, and the radius stays
+     exactly what was asked for rather than becoming r - 1. */
+  --edge-rest: inset 0 0 0 1px var(--border);
+  --edge-raised: 0 0 2px rgba(28, 40, 64, 0.18), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --edge-float: 0 0 0 1px rgba(28, 40, 64, 0.04), 0 4px 8px -4px rgba(28, 40, 64, 0.12),
+    0 4px 12px -2px rgba(24, 41, 75, 0.16);
+  --edge-solid: inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(20, 20, 20, 0.12);
+}
+
+/* Same hues, re-tuned L and C% — a mirror of the light ramp reads muddy. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #100f0e;
+    --foreground: #efeeed;
+    --card: #161615;
+    --card-foreground: #efeeed;
+    --popover: #161615;
+    --popover-foreground: #efeeed;
+    --muted: #222120;
+    --muted-foreground: #c0bdb9;
+    --faint: #82807c;
+    --border: #2e2e2c;
+    --input: #2e2e2c;
+    --primary: #efeeed;           /* the solid ink button inverts to a light one */
+    --primary-foreground: #100f0e;
+    --secondary: #161615;
+    --secondary-foreground: #efeeed;
+    --accent: #222120;
+    --accent-foreground: #efeeed;
+    --brand: #3c9d55;
+    --brand-hover: #4bc06a;
+    --brand-tint: #1a2b1d;
+    --brand-text: #86db97;
+    --ring: #3c9d55;
+    --info: #b5c4e5;
+    --info-tint: #12234f;
+    --info-solid: #5580e8;
+    --success: #86da9e;
+    --success-tint: #1a2b1f;
+    --success-solid: #3c9c5d;
+    --warning: #e5bd7e;
+    --warning-tint: #2d2518;
+    --warning-solid: #a87e35;
+    --destructive: #e6b7b2;
+    --destructive-tint: #3b1c1a;
+    --destructive-solid: #e64243;
+    --sidebar: #161615;
+    --sidebar-foreground: #efeeed;
+    --sidebar-accent: rgba(255, 255, 255, 0.06);
+    --sidebar-accent-foreground: #efeeed;
+    --sidebar-border: #2e2e2c;
+    /* In dark the drops disappear and the ring carries every level. */
+    --edge-raised: inset 0 0 0 1px var(--border);
+    --edge-float: inset 0 0 0 1px var(--border);
+    --edge-solid: none;
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
@@ -21,9 +147,26 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-faint: var(--faint);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-tint: var(--brand-tint);
+  --color-brand-text: var(--brand-text);
+  --color-on-brand: var(--on-brand);
+  --color-info: var(--info);
+  --color-info-tint: var(--info-tint);
+  --color-info-solid: var(--info-solid);
+  --color-success: var(--success);
+  --color-success-tint: var(--success-tint);
+  --color-success-solid: var(--success-solid);
+  --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-solid: var(--warning-solid);
   --color-destructive: var(--destructive);
+  --color-destructive-tint: var(--destructive-tint);
+  --color-destructive-solid: var(--destructive-solid);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -33,44 +176,204 @@
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Four explicit radius steps — never shadcn's single derived --radius.
+     Nested corners stay concentric: outer = inner + padding. */
+  --radius-xs: 0.25rem;  /* 4px:  chips */
+  --radius-sm: 0.5rem;   /* 8px:  buttons, inputs, hover rows */
+  --radius-md: 0.75rem;  /* 12px: cards, tiles, popovers */
+  --radius-lg: 1rem;     /* 16px: modals */
+  --radius-xl: 1.5rem;   /* 24px: trays */
+
+  /* Utility names for the three edge recipes: shadow-edge / -raised / -float. */
+  --shadow-edge: var(--edge-rest);
+  --shadow-raised: var(--edge-raised);
+  --shadow-float: var(--edge-float);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/*
+ * Category families — the colour a RECORD TYPE owns and keeps on its icon tile
+ * across every surface, which is what makes a property recognisable before you
+ * read its name. Same three roles as every other hue, derived by
+ * scripts/apps-design-palette.py and contrast-verified in both appearances.
+ *
+ * The NAMES are the values already stored in `properties.color` and
+ * `vendors.color`, so existing rows keep working; only what each name paints
+ * has changed. They were Tailwind palette steps, which are unequal in
+ * perceived lightness and cold blue-gray — ten "equally bright" tags that
+ * aren't.
+ */
 :root {
-  --background: oklch(0.99 0.005 150);
-  --foreground: oklch(0.18 0.02 240);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 240);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 240);
-  --primary: oklch(0.55 0.16 150);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.01 150);
-  --secondary-foreground: oklch(0.22 0.03 240);
-  --muted: oklch(0.96 0.005 150);
-  --muted-foreground: oklch(0.52 0.02 240);
-  --accent: oklch(0.94 0.03 150);
-  --accent-foreground: oklch(0.22 0.06 150);
-  --destructive: oklch(0.6 0.22 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.91 0.01 150);
-  --input: oklch(0.91 0.01 150);
-  --ring: oklch(0.55 0.16 150);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0.005 150);
-  --sidebar-foreground: oklch(0.22 0.02 240);
-  --sidebar-accent: oklch(0.94 0.04 150);
-  --sidebar-accent-foreground: oklch(0.3 0.12 150);
-  --sidebar-border: oklch(0.91 0.01 150);
+  --cat-sky-tint: #e6f2f9;
+  --cat-sky-text: #2a596e;
+  --cat-sky-solid: #308bb1;
+  --cat-emerald-tint: #dbf9e2;
+  --cat-emerald-text: #2b5f3c;
+  --cat-emerald-solid: #319656;
+  --cat-amber-tint: #f9efdf;
+  --cat-amber-text: #664e27;
+  --cat-amber-solid: #a3772b;
+  --cat-rose-tint: #f9eded;
+  --cat-rose-text: #892f3c;
+  --cat-rose-solid: #df3558;
+  --cat-violet-tint: #f0eff9;
+  --cat-violet-text: #5636a9;
+  --cat-violet-solid: #8362ed;
+  --cat-fuchsia-tint: #f9ebf9;
+  --cat-fuchsia-text: #782f7d;
+  --cat-fuchsia-solid: #c236cc;
+  --cat-teal-tint: #d4f9f3;
+  --cat-teal-text: #2b5c56;
+  --cat-teal-solid: #319287;
+  --cat-orange-tint: #f9eee6;
+  --cat-orange-text: #734626;
+  --cat-orange-solid: #b9692a;
+  --cat-slate-tint: #f7f7f5;
+  --cat-slate-text: #646360;
+  --cat-slate-solid: #9a9893;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cat-sky-tint: #1a2930;
+    --cat-sky-text: #9bcce5;
+    --cat-sky-solid: #3b91b6;
+    --cat-emerald-tint: #1a2b1f;
+    --cat-emerald-text: #86da9e;
+    --cat-emerald-solid: #3c9c5d;
+    --cat-amber-tint: #2d2518;
+    --cat-amber-text: #e5bd7e;
+    --cat-amber-solid: #a87e35;
+    --cat-rose-tint: #3b1c1f;
+    --cat-rose-text: #e6b6b8;
+    --cat-rose-solid: #e4415e;
+    --cat-violet-tint: #271f45;
+    --cat-violet-text: #c3bfe5;
+    --cat-violet-solid: #876ee8;
+    --cat-fuchsia-tint: #341c36;
+    --cat-fuchsia-text: #e3b0e5;
+    --cat-fuchsia-solid: #c741d1;
+    --cat-teal-tint: #1a2a28;
+    --cat-teal-text: #86d5cb;
+    --cat-teal-solid: #3c978d;
+    --cat-orange-tint: #322318;
+    --cat-orange-text: #e6ba9d;
+    --cat-orange-solid: #be7035;
+    --cat-slate-tint: #222120;
+    --cat-slate-text: #c0bdb9;
+    --cat-slate-solid: #82807c;
+  }
+}
+
+@theme inline {
+  --color-cat-sky-tint: var(--cat-sky-tint);
+  --color-cat-sky-text: var(--cat-sky-text);
+  --color-cat-sky-solid: var(--cat-sky-solid);
+  --color-cat-emerald-tint: var(--cat-emerald-tint);
+  --color-cat-emerald-text: var(--cat-emerald-text);
+  --color-cat-emerald-solid: var(--cat-emerald-solid);
+  --color-cat-amber-tint: var(--cat-amber-tint);
+  --color-cat-amber-text: var(--cat-amber-text);
+  --color-cat-amber-solid: var(--cat-amber-solid);
+  --color-cat-rose-tint: var(--cat-rose-tint);
+  --color-cat-rose-text: var(--cat-rose-text);
+  --color-cat-rose-solid: var(--cat-rose-solid);
+  --color-cat-violet-tint: var(--cat-violet-tint);
+  --color-cat-violet-text: var(--cat-violet-text);
+  --color-cat-violet-solid: var(--cat-violet-solid);
+  --color-cat-fuchsia-tint: var(--cat-fuchsia-tint);
+  --color-cat-fuchsia-text: var(--cat-fuchsia-text);
+  --color-cat-fuchsia-solid: var(--cat-fuchsia-solid);
+  --color-cat-teal-tint: var(--cat-teal-tint);
+  --color-cat-teal-text: var(--cat-teal-text);
+  --color-cat-teal-solid: var(--cat-teal-solid);
+  --color-cat-orange-tint: var(--cat-orange-tint);
+  --color-cat-orange-text: var(--cat-orange-text);
+  --color-cat-orange-solid: var(--cat-orange-solid);
+  --color-cat-slate-tint: var(--cat-slate-tint);
+  --color-cat-slate-text: var(--cat-slate-text);
+  --color-cat-slate-solid: var(--cat-slate-solid);
 }
 
 @layer base {
-  * { @apply border-border; }
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Numbers are instrumentation: tabular figures so digits and totals stack. */
+  .data { font-variant-numeric: tabular-nums; }
+
+  /* 13px sentence case, muted. NOT uppercase: the 11px tracked micro style
+     exists for exactly one job, the label above a KPI number, and an interface
+     covered in small caps reads as a control panel rather than a product. */
+  .section-label { @apply text-[0.8125rem] font-medium leading-tight text-muted-foreground; }
+
+  /* The one sanctioned uppercase: the label above a KPI value. */
+  .stat-label {
+    @apply text-[0.6875rem] font-semibold uppercase leading-none tracking-[0.06em] text-muted-foreground;
+  }
+
+  /* A chip is a fact (type, category); a badge is a signal (paid, overdue).
+     Neither is bold, and neither carries a border. */
+  .chip {
+    @apply inline-flex shrink-0 items-center gap-1 rounded-xs bg-muted px-2 py-0.5 text-xs text-muted-foreground;
+  }
+  .badge-tone {
+    @apply inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium;
+  }
+  .tone-info { @apply bg-info-tint text-info; }
+  .tone-success { @apply bg-success-tint text-success; }
+  .tone-warning { @apply bg-warning-tint text-warning; }
+  .tone-danger { @apply bg-destructive-tint text-destructive; }
+  .tone-neutral { @apply bg-muted text-muted-foreground; }
+
+  /* The app's identity mark: brand tile, white glyph. */
+  .app-icon { @apply inline-flex shrink-0 items-center justify-center rounded-md bg-brand text-on-brand; }
+}
+
+/* Agent mode (?agent / mode=agent sets data-agent on <html>): interactive
+ * targets grow, and hover-only affordances become always-visible. */
+:root[data-agent] button,
+:root[data-agent] input,
+:root[data-agent] select,
+:root[data-agent] textarea {
+  min-height: 2.75rem;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+/* Mobile browsers resize dvh with the URL bar; plain % leaves a fixed footer
+ * hidden behind it. */
+@supports (height: 100dvh) {
+  html,
+  body,
+  #app {
+    height: 100dvh;
+  }
+}
+
+/* iOS Safari zooms the whole page when a focused control's font is under 16px.
+ * The !important is required to outrank Tailwind's text-[...] utilities. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem !important;
   }
 }

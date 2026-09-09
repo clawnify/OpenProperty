@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TenantDialog } from "./tenant-dialog";
 import type { Tenant } from "@/types";
+import { PageShell } from "@/components/page-shell";
 
 export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
   const app = useApp();
@@ -38,17 +39,18 @@ export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
   }, [tenants, q]);
 
   return (
-    <div className="flex-1 overflow-auto">
-      <div className="mx-auto w-full max-w-6xl space-y-6 p-6">
-        <header className="flex items-end justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Tenants</h1>
-            <p className="text-sm text-muted-foreground">{tenants.length} record{tenants.length === 1 ? "" : "s"}</p>
-          </div>
+    <PageShell
+      title="Tenants"
+      meta={`${tenants.length} ${tenants.length === 1 ? "record" : "records"}`}
+      actions={
+        tenants.length > 0 ? (
           <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" /> New tenant
+            <Plus className="h-4 w-4" /> New tenant
           </Button>
-        </header>
+        ) : null
+      }
+      width="max-w-6xl"
+    >
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -63,16 +65,16 @@ export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
         {loading ? (
           <Card className="p-8 text-center text-sm text-muted-foreground">Loading…</Card>
         ) : filtered.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 p-12 text-center">
-            <User className="h-7 w-7 text-muted-foreground" />
+          <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
+            <User className="size-7 text-faint" aria-hidden />
             <p className="font-medium">{tenants.length === 0 ? "No tenants yet" : "No matches"}</p>
-            <p className="text-sm text-muted-foreground">{tenants.length === 0 ? "Add a tenant to start signing leases." : "Try a different search."}</p>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{tenants.length === 0 ? "Add a tenant to start signing leases." : "Try a different search."}</p>
             {tenants.length === 0 && (
               <Button className="mt-2" onClick={() => setDialogOpen(true)}>
                 <Plus className="mr-1 h-4 w-4" /> New tenant
               </Button>
             )}
-          </Card>
+          </div>
         ) : (
           <Card className="overflow-hidden">
             <Table>
@@ -120,9 +122,8 @@ export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
             </Table>
           </Card>
         )}
-      </div>
 
       <TenantDialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) load(); }} />
-    </div>
+    </PageShell>
   );
 }
