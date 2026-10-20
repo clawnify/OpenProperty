@@ -1,0 +1,19 @@
+{
+  "name": "KodiTrack — Rental Property Management",
+  "short_name": "KodiTrack",
+  "description": "Rental property management software for Kenyan landlords, caretakers, and property managers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0F766E",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "finance", "productivity"]
+}

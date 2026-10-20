@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { PropertyDialog } from "./property-dialog";
 import type { Property } from "@/types";
 import { PageShell } from "@/components/page-shell";
+import { getPlanLimits } from "../../../shared/plan-config";
 
 const TYPE_LABEL: Record<string, string> = {
   single_family: "Single-family",
@@ -17,9 +18,11 @@ const TYPE_LABEL: Record<string, string> = {
 };
 
 export function PropertiesList({ navigate }: { navigate: (to: string) => void }) {
-  const { properties } = useApp();
+  const { properties, user } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Property | undefined>(undefined);
+  const propertyLimit = getPlanLimits(user?.plan || "free").properties;
+  const propertyLimitReached = propertyLimit !== null && properties.length >= propertyLimit;
 
   const totalUnits = properties.reduce((sum, p) => sum + (p.unit_count ?? 0), 0);
   const occupied = properties.reduce((sum, p) => sum + (p.occupied_count ?? 0), 0);
@@ -30,13 +33,24 @@ export function PropertiesList({ navigate }: { navigate: (to: string) => void })
       meta={`${properties.length} ${properties.length === 1 ? "property" : "properties"} · ${totalUnits} ${totalUnits === 1 ? "unit" : "units"} · ${occupied}/${totalUnits || 0} occupied`}
       actions={
         properties.length > 0 ? (
-          <Button onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
-            <Plus className="h-4 w-4" />
-            New property
-          </Button>
+          propertyLimitReached ? (
+            <Button variant="outline" onClick={() => navigate("/subscriptions")}>
+              View plan options
+            </Button>
+          ) : (
+            <Button onClick={() => { setEditing(undefined); setDialogOpen(true); }}>
+              <Plus className="h-4 w-4" />
+              New property
+            </Button>
+          )
         ) : null
       }
     >
+      {propertyLimitReached && (
+        <p className="mb-4 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Property capacity reached ({properties.length}/{propertyLimit}). Review plans to expand your portfolio.
+        </p>
+      )}
       {properties.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
             <Building2 className="size-8 text-faint" aria-hidden />

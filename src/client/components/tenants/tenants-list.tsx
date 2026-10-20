@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { TenantDialog } from "./tenant-dialog";
 import type { Tenant } from "@/types";
 import { PageShell } from "@/components/page-shell";
+import { ListRowIndicator } from "../ui/ListRowIndicator";
 
 export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
   const app = useApp();
@@ -63,7 +64,16 @@ export function TenantsList({ navigate }: { navigate: (to: string) => void }) {
         </div>
 
         {loading ? (
-          <Card className="p-8 text-center text-sm text-muted-foreground">Loading…</Card>
+          
+            <Card className="divide-y divide-border overflow-hidden" role="status" aria-label="Loading tenants">
+            {[0, 1].map((i) => (
+              <div key={i} className="flex h-11 items-center gap-4 px-3" aria-hidden>
+                <div className="h-2.5 w-32 animate-pulse rounded-full bg-muted" />
+                <div className="h-2.5 w-24 animate-pulse rounded-full bg-muted" />
+                <div className="ml-auto h-2.5 w-16 animate-pulse rounded-full bg-muted" />
+              </div>
+            ))}
+          </Card>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-2 px-6 py-20 text-center">
             <User className="size-7 text-faint" aria-hidden />

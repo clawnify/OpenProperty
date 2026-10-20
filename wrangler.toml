@@ -1,9 +1,35 @@
-name = "open-property"
+name = "koditrack"
 main = "src/server/index.ts"
 compatibility_date = "2025-04-01"
 compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "open-property-db"
-database_id = "local"
+database_name = "koditrack-db"
+database_id = "acd5a781-a8cf-413f-83d4-a6d2aeaf1bc2"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# ...
+[observability]
+enabled = false
+# ...
+
+# ...
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
+head_sampling_rate = 1
+persist = true
+
+[observability.issue_detection]
+enabled = false
+# ...

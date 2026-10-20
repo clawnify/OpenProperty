@@ -1,6 +1,6 @@
 {
-  "name": "OpenProperty",
-  "description": "Open-source property management software — a self-hosted, cloud-based alternative to TenantCloud, AppFolio, Buildium, and Propertyware for landlords and small property managers. Rental property management with properties and units, tenants and leases, rent collection and ledger, work orders and maintenance, and a vendor directory.",
+  "name": "KodiTrack",
+  "description": "KodiTrack — Rental property management for Kenyan landlords and property managers. Track rent collections, manage tenants and properties, monitor arrears, and organize rental records.",
   "framework": "react+hono",
   "files": [
     "src/server/index.ts",

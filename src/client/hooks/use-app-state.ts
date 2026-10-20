@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api";
 import type {
+  User,
   Property,
   Unit,
   Tenant,
@@ -25,9 +26,9 @@ export interface AppSettings {
 
 const DEFAULT_SETTINGS: AppSettings = {
   default_rent_due_day: 1,
-  late_fee_amount: 50,
+  late_fee_amount: 500,
   late_fee_grace_days: 5,
-  currency: "USD",
+  currency: "KES",
 };
 
 function parseSettings(raw: Record<string, string>): AppSettings {
@@ -44,6 +45,9 @@ function parseSettings(raw: Record<string, string>): AppSettings {
 }
 
 export function useAppState() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [needsSetup, setNeedsSetup] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
@@ -53,14 +57,61 @@ export function useAppState() {
   // Lookup loaders ─────────────────────────────────────────────────
 
   const refreshLookups = useCallback(async () => {
-    const [props, vens, st] = await Promise.all([
-      api<{ properties: Property[] }>("GET", "/api/properties"),
-      api<{ vendors: Vendor[] }>("GET", "/api/vendors").catch(() => ({ vendors: [] })),
-      api<{ settings: Record<string, string> }>("GET", "/api/settings").catch(() => ({ settings: {} })),
-    ]);
-    setProperties(props.properties);
-    setVendors(vens.vendors);
-    setSettings(parseSettings(st.settings));
+    try {
+      const [props, vens, st] = await Promise.all([
+        api<{ properties: Property[] }>("GET", "/api/properties"),
+        api<{ vendors: Vendor[] }>("GET", "/api/vendors").catch(() => ({ vendors: [] })),
+        api<{ settings: Record<string, string> }>("GET", "/api/settings").catch(() => ({ settings: {} })),
+      ]);
+      setProperties(props.properties);
+      setVendors(vens.vendors);
+      setSettings(parseSettings(st.settings));
+    } catch {
+      // Ignore if unauthorized
+    }
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    try {
+      setAuthLoading(true);
+      const res = await api<{ user: User | null; needs_setup: boolean }>("GET", "/api/auth/me");
+      setUser(res.user);
+      setNeedsSetup(res.needs_setup);
+      if (res.user || res.needs_setup) {
+        await refreshLookups();
+      }
+      return res.user;
+    } catch {
+      setUser(null);
+      return null;
+    } finally {
+      setAuthLoading(false);
+      setLoading(false);
+    }
+  }, [refreshLookups]);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const res = await api<{ user: User; token: string }>("POST", "/api/auth/login", { email, password });
+    setUser(res.user);
+    await refreshLookups();
+    return res.user;
+  }, [refreshLookups]);
+
+  const register = useCallback(async (data: { email: string; password: string; name: string; phone?: string | null; plan?: string }) => {
+    const res = await api<{ user: User; token: string }>("POST", "/api/auth/register", data);
+    setUser(res.user);
+    setNeedsSetup(false);
+    await refreshLookups();
+    return res.user;
+  }, [refreshLookups]);
+
+  const logout = useCallback(async () => {
+    await api("POST", "/api/auth/logout").catch(() => {});
+    setUser(null);
+    if (window.location.pathname !== "/" && window.location.pathname !== "/login") {
+      window.history.pushState(null, "", "/");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
   }, []);
 
   const updateSettings = useCallback(async (patch: Partial<AppSettings>) => {
@@ -72,19 +123,10 @@ export function useAppState() {
     setSettings(parseSettings(res.settings));
   }, []);
 
-  // Initial load.
+  // Initial load: check auth first.
   useEffect(() => {
-    (async () => {
-      try {
-        setLoading(true);
-        await refreshLookups();
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [refreshLookups]);
+    checkAuth();
+  }, [checkAuth]);
 
   // Property mutations ─────────────────────────────────────────────
 
@@ -251,6 +293,9 @@ export function useAppState() {
   }, []);
 
   return {
+    // auth
+    user, authLoading, needsSetup,
+    login, register, logout, checkAuth, setUser,
     // data
     properties, vendors, settings,
     loading, error, setError,

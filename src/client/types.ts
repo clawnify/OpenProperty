@@ -1,5 +1,17 @@
 // ── Core entities ──────────────────────────────────────────────────
 
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  phone: string | null;
+  role: string;
+  plan?: string;
+  plan_expires_at?: string | null;
+  status?: string;
+  created_at: string;
+}
+
 export type PropertyType = "single_family" | "multi_family" | "condo" | "townhouse" | "commercial";
 
 export interface Property {
@@ -94,6 +106,7 @@ export interface RentCharge {
   due_date: string;
   amount: number;
   amount_paid: number;
+  amount_credited: number;
   status: ChargeStatus;
   notes: string | null;
   created_at: string;
@@ -110,13 +123,14 @@ export interface RentCharge {
   tenant_last_name?: string | null;
 }
 
-export type PaymentMethod = "cash" | "check" | "ach" | "credit" | "other";
+export type PaymentMethod = "mpesa" | "bank_transfer" | "cash" | "check" | "credit" | "other";
 
 export interface Payment {
   id: number;
   charge_id: number;
   paid_at: string;
   amount: number;
+  applied_amount?: number;
   method: PaymentMethod;
   reference: string | null;
   notes: string | null;
@@ -193,6 +207,8 @@ export interface DashboardSummary {
   upcoming_move_outs: number;
   month_outstanding: number;
   month_collected: number;
+  month_credited: number;
+  month_settled: number;
   overdue_total: number;
   overdue_count: number;
   open_work_orders: number;
@@ -206,6 +222,8 @@ export interface DashboardSummary {
     tenant_first_name: string | null; tenant_last_name: string | null;
     unit_name: string | null; property_name: string | null;
   }[];
+  monthly_trends?: { period: string; charged: number; collected: number }[];
+  portfolio_distribution?: { id: number; name: string; color: string; total_units: number; occupied_units: number }[];
 }
 
 // ── Input types for mutations ──────────────────────────────────────

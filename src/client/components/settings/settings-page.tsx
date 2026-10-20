@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { LogOut, Pencil, Plus, ShieldCheck, Trash2, User, Smartphone } from "lucide-react";
 import { useApp } from "@/context";
-import { cn, colorClasses } from "@/lib/utils";
+import { cn, colorClasses, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDelete } from "@/components/ui/alert-dialog";
 import { Card } from "@/components/ui/card";
+import { MpesaCheckoutModal } from "../marketing/mpesa-checkout-modal";
+import { getPlanLimits, isPaidPlan, PAID_PLANS, type PaidPlanId } from "../../../shared/plan-config";
 import {
   Dialog,
   DialogContent,
@@ -37,24 +39,143 @@ export function SettingsPage() {
   return (
     <PageShell
       title="Settings"
-      meta="Vendors and rent policy defaults"
+      meta="Account, vendors, and rent policy defaults"
       width="max-w-5xl"
     >
+      <Tabs defaultValue="account">
+        <TabsList>
+          <TabsTrigger value="account">Account</TabsTrigger>
+          <TabsTrigger value="vendors">Vendors</TabsTrigger>
+          <TabsTrigger value="policy">Rent policy</TabsTrigger>
+        </TabsList>
 
-        <Tabs defaultValue="vendors">
-          <TabsList>
-            <TabsTrigger value="vendors">Vendors</TabsTrigger>
-            <TabsTrigger value="policy">Rent policy</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="vendors" className="mt-4">
-            <VendorsTab />
-          </TabsContent>
-          <TabsContent value="policy" className="mt-4">
-            <PolicyTab />
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="account" className="mt-4">
+          <AccountTab />
+        </TabsContent>
+        <TabsContent value="vendors" className="mt-4">
+          <VendorsTab />
+        </TabsContent>
+        <TabsContent value="policy" className="mt-4">
+          <PolicyTab />
+        </TabsContent>
+      </Tabs>
     </PageShell>
+  );
+}
+
+// ── Account ────────────────────────────────────────────────────────
+
+function AccountTab() {
+  const app = useApp();
+  const user = app.user;
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const currentPlan = user?.plan || "free";
+  const currentPlanLimits = getPlanLimits(currentPlan);
+  const currentPlanName = isPaidPlan(currentPlan) ? PAID_PLANS[currentPlan].name : "Legacy access";
+  const upgradePlan: PaidPlanId =
+    currentPlan === "starter" ? "plus" : currentPlan === "plus" ? "manager" : currentPlan === "manager" ? "manager" : "starter";
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-6">
+        <div className="flex items-center justify-between border-b pb-4">
+          <div>
+            <h2 className="text-sm font-semibold">Landlord Profile</h2>
+            <p className="text-xs text-muted-foreground">Your account details on KodiTrack.</p>
+          </div>
+          <Badge variant="neutral" className="bg-teal-50 text-teal-800 border-teal-200">
+            {user?.role === "landlord" ? "Verified Landlord" : user?.role || "Active"}
+          </Badge>
+        </div>
+
+        <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <dt className="text-xs text-muted-foreground">Name</dt>
+            <dd className="text-sm font-medium text-foreground">{user?.name || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Email</dt>
+            <dd className="text-sm font-medium text-foreground">{user?.email || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Phone Number</dt>
+            <dd className="text-sm font-medium text-foreground">{user?.phone || "Not configured"}</dd>
+          </div>
+          <div>
+            <dt className="text-xs text-muted-foreground">Member Since</dt>
+            <dd className="text-sm font-medium text-foreground">
+              {user?.created_at ? formatDate(user.created_at) : "—"}
+            </dd>
+          </div>
+          <div className="sm:col-span-2 rounded-xl border border-teal-100 bg-teal-50/50 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <dt className="text-xs font-semibold text-teal-900 uppercase tracking-wider">Current Subscription Plan</dt>
+              <dd className="text-base font-bold text-teal-800 capitalize mt-0.5">
+                {currentPlanName}
+                <span className="text-xs font-normal text-teal-700 ml-2">
+                  ({currentPlanLimits.properties === null
+                    ? `Existing access: up to ${currentPlanLimits.units} units`
+                    : `Up to ${currentPlanLimits.properties} properties and ${currentPlanLimits.units} units`})
+                </span>
+              </dd>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  window.history.pushState(null, "", "/subscriptions");
+                  window.dispatchEvent(new PopStateEvent("popstate"));
+                }}
+                className="text-xs font-semibold"
+              >
+                Manage Plan & Quotas →
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setUpgradeModalOpen(true)}
+                className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs shadow-xs"
+              >
+                <Smartphone className="mr-1.5 h-3.5 w-3.5" /> Renew or change plan
+              </Button>
+            </div>
+          </div>
+        </dl>
+
+        <div className="mt-6 flex items-center justify-between border-t pt-4">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="h-4 w-4 text-teal-700" />
+            <span>Account and sign-in settings</span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              await app.logout();
+              window.history.pushState(null, "", "/");
+              window.dispatchEvent(new PopStateEvent("popstate"));
+            }}
+            className="text-destructive hover:bg-destructive-tint hover:text-destructive"
+          >
+            <LogOut className="mr-1.5 h-4 w-4" /> Sign Out
+          </Button>
+        </div>
+      </Card>
+
+      {upgradeModalOpen && (
+        <MpesaCheckoutModal
+          isOpen={upgradeModalOpen}
+          planId={upgradePlan}
+          currentUser={user}
+          onClose={() => setUpgradeModalOpen(false)}
+          onSuccess={(updatedUser) => {
+            setUpgradeModalOpen(false);
+            if (updatedUser) app.setUser(updatedUser);
+            else app.checkAuth();
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -273,7 +394,7 @@ function PolicyTab() {
         default_rent_due_day: Math.min(31, Math.max(1, parseInt(dueDay, 10) || 1)),
         late_fee_amount: parseFloat(lateFee) || 0,
         late_fee_grace_days: Math.max(0, parseInt(grace, 10) || 0),
-        currency: currency.trim().toUpperCase() || "USD",
+        currency: currency.trim().toUpperCase() || "KES",
       });
     } catch (err) {
       app.setError((err as Error).message);
@@ -294,7 +415,7 @@ function PolicyTab() {
           <Input id="s-day" type="number" min={1} max={31} value={dueDay} onChange={(e) => setDueDay(e.target.value)} />
         </div>
         <div>
-          <Label htmlFor="s-late">Late fee</Label>
+          <Label htmlFor="s-late">Late fee (KES)</Label>
           <Input id="s-late" type="number" value={lateFee} onChange={(e) => setLateFee(e.target.value)} />
         </div>
         <div>
@@ -303,7 +424,7 @@ function PolicyTab() {
         </div>
         <div>
           <Label htmlFor="s-cur">Currency</Label>
-          <Input id="s-cur" value={currency} onChange={(e) => setCurrency(e.target.value)} placeholder="USD" />
+          <Input id="s-cur" value={currency} onChange={(e) => setCurrency(e.target.value)} placeholder="KES" />
         </div>
       </div>
       <div className="mt-4">

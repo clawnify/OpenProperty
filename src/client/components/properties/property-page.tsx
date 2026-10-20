@@ -11,6 +11,7 @@ import { UnitDialog } from "./unit-dialog";
 import { WorkOrderDialog } from "../maintenance/work-order-dialog";
 import type { Property, Unit, WorkOrder } from "@/types";
 import { PageShell } from "@/components/page-shell";
+import { getPlanLimits } from "../../../shared/plan-config";
 
 const TYPE_LABEL: Record<string, string> = {
   single_family: "Single-family",
@@ -81,6 +82,9 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
   const occupied = units.filter((u) => u.status === "occupied").length;
   const totalRent = units.reduce((sum, u) => sum + (u.market_rent ?? 0), 0);
   const openWorkOrders = workOrders.filter((w) => w.status !== "completed" && w.status !== "cancelled");
+  const unitLimit = getPlanLimits(app.user?.plan || "free").units;
+  const currentUnits = app.properties.reduce((sum, p) => sum + (p.unit_count ?? 0), 0);
+  const unitLimitReached = currentUnits >= unitLimit;
 
   return (
     <PageShell
@@ -131,9 +135,15 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
         <section>
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-[1.0625rem] font-semibold leading-tight">Units</h2>
-            <Button size="sm" onClick={() => { setEditingUnit(undefined); setUnitDialogOpen(true); }}>
-              <Plus className="mr-1 h-4 w-4" /> New unit
-            </Button>
+            {unitLimitReached ? (
+              <Button size="sm" variant="outline" onClick={() => navigate("/subscriptions")}>
+                Unit limit reached · View plans
+              </Button>
+            ) : (
+              <Button size="sm" onClick={() => { setEditingUnit(undefined); setUnitDialogOpen(true); }}>
+                <Plus className="mr-1 h-4 w-4" /> New unit
+              </Button>
+            )}
           </div>
           {units.length === 0 ? (
             <Card className="p-8 text-center text-sm text-muted-foreground">

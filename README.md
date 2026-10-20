@@ -1,115 +1,83 @@
-<img src="readme-banner.png" alt="OpenProperty preview" width="100%" />
+# KodiTrack
 
-# OpenProperty
+KodiTrack is a property-management web application for landlords and small property managers. It brings property and unit records, tenant and lease details, rent charges and receipts, arrears reporting, and maintenance work orders into one workspace.
 
-[![Deploy with Clawnify](https://app.clawnify.com/deploy-button.svg)](https://app.clawnify.com/deploy?repo=clawnify/OpenProperty)
+The project is an early product, not a certified accounting package or a substitute for legal, tax, or regulated financial advice. Rent records and exports should be reconciled with the landlord's bank and M-Pesa statements.
 
-Open-source **property management software** — a self-hosted, cloud-based alternative to TenantCloud, AppFolio, Buildium, and Propertyware for landlords, small property managers, and apartment / multi-family back-office teams.
+## Current capabilities
 
-Rental property management with everything you need to run a portfolio: properties and units, tenants and leases, rent collection and a ledger, maintenance work orders, and a vendor directory.
+- Manage properties, units, tenants, leases, and vendor records.
+- Generate monthly rent charges and review balances by period.
+- Record payment receipts, references, and dates.
+- Keep a rent overpayment as a lease-scoped credit and apply it to older unpaid rent charges; reports distinguish cash applied from credit applied.
+- Review arrears, payment history, and CSV exports.
+- Track maintenance work orders and upcoming lease expirations.
+- Install the web app on supported browsers. The service worker caches the app shell only; it does not make API data or payment operations available offline.
+- Render the client-side not-found screen for unknown page paths on the configured Cloudflare Workers assets deployment.
 
-> Built on the [Clawnify](https://clawnify.com) template format. Deploy your own copy in minutes, customize freely, own the data.
+## Plans and renewals
 
-## Features
+New accounts choose a paid plan through the M-Pesa checkout. Each plan has separate property and rental-unit caps:
 
-### Dashboard
-- **At-a-glance KPIs** — occupancy rate, active leases, outstanding rent, open work orders
-- **This month's rent** — collected, outstanding, overdue at a glance
-- **Open work orders** + **upcoming lease expirations** — what to act on this week
+- **Solo:** KSh 1,500/month, up to 2 properties and 15 units.
+- **Growth:** KSh 3,000/month, up to 10 properties and 50 units.
+- **Portfolio:** KSh 4,900/month, up to 30 properties and 100 units.
 
-### Properties & units
-- Property cards with type, address, color tag, occupancy snapshot
-- Per-property page with summary tiles, unit grid, and the property's open work orders
-- Units track bedrooms, bathrooms, square footage, market rent, and status (vacant / occupied / turnover / unavailable)
+Plans renew manually; the application does not automatically charge a customer's M-Pesa account. Existing legacy accounts retain their prior access and are not converted automatically. Do not treat the payment simulation as a production payment.
 
-### Tenants
-- Searchable list showing each tenant's active unit and contact info
-- Detail page with active lease, contact, employer, income, emergency contact, lease history
+## Technology
 
-### Leases
-- One row per lease with tenant, property · unit, term, monthly rent, and status
-- Filters for active / upcoming / ended / all
-- Edit-in-dialog with start / end / rent / deposit / due day / late fee / status
+- React, Vite, and TypeScript
+- Hono on Cloudflare Workers
+- Cloudflare D1
+- Tailwind CSS
 
-### Rent ledger
-- One charge per active lease per month, generated idempotently with one click
-- Period navigator (◀ / today / ▶) and totals: charged, collected, outstanding, overdue
-- Record payments by amount, method, date, and reference. Status auto-updates as payments roll in
-- Past payments visible per charge with one-click removal
+## Requirements
 
-### Maintenance
-- Work orders with title, description, priority (urgent / high / normal / low), and status (open / assigned / in progress / completed / cancelled)
-- Tabs: open / unassigned / assigned / in progress / completed / all
-- Link work orders to a property, unit, and vendor; track scheduled date and cost
+- Node.js compatible with the dependencies in `package.json`
+- pnpm
+- A Cloudflare account and Wrangler authentication for Cloudflare deployment
 
-### Vendors & policy
-- Vendor directory by category (plumber / electrician / HVAC / handyman / cleaning / landscaping / general)
-- Rent policy defaults: due day, late fee, grace days, currency
+## Local development
 
-## Stack
-
-- React 19 + Vite + TypeScript
-- Tailwind CSS v4 + shadcn/ui (Radix primitives)
-- Hono on Cloudflare Workers (D1-native — same code locally and in production)
-- `lucide-react` for icons
-- pushState URL routing
-
-## Develop
-
-```bash
+```sh
 pnpm install
-pnpm dev          # Vite at :5173, Wrangler at :8787 (D1 schema applied automatically)
+pnpm dev
+```
+
+The local development command applies `src/server/schema.sql` to Wrangler's local D1 database and starts Vite and Wrangler. Use only test data locally. Runtime initialization also contains compatibility migrations for older databases.
+
+Useful checks:
+
+```sh
 pnpm typecheck
 pnpm build
 ```
 
-The dev script applies `src/server/schema.sql` to the local D1 database, then runs Vite and Wrangler in parallel. The schema seeds 3 sample properties, 5 units, and 3 vendors so the app is usable on first boot.
+## Cloudflare deployment
 
-## Deploy
+1. Configure the D1 binding and database for your own Cloudflare account in `wrangler.toml`. Do not publish account credentials, API tokens, or production database secrets.
+2. Apply the schema to the intended remote D1 database using Wrangler's remote D1 execution option and `src/server/schema.sql`. Back up important production data before schema changes.
+3. Set Daraja credentials and other private configuration as Worker secrets/environment bindings, not in source control. See [the Daraja guide](./docs/MPESA-DARAJA-GUIDE.md).
+4. Build and deploy with Wrangler using your project's deployment workflow. Confirm the deployed Worker serves the manifest, icon, and service worker, and test an unknown browser route.
+5. Use the deployed HTTPS origin as the canonical public origin. Configure Daraja callback URLs to the same origin and verify callback delivery from the provider.
 
-If you have the Clawnify CLI installed:
+The static asset configuration uses SPA fallback for page routes. Do not configure API routes or real static asset misses to return the app HTML; verify API errors and missing assets remain understandable after deployment.
 
-```bash
-clawnify deploy
-```
+## Rent credits and recordkeeping
 
-Or wire it up to Cloudflare Workers + D1 directly using the bindings in `wrangler.toml` (binding `DB`, database name `open-property-db`).
+When a recorded payment exceeds the open balance on its selected charge, the receipt remains recorded for its full amount. The amount needed for that charge is applied to it; the excess becomes a credit on the same lease and is applied to the oldest unpaid rent charge on that lease. The ledger tracks cash applied and credit applied separately. Deleting a payment reverses its credit allocations and is intended for correcting an erroneous entry, not for routine bookkeeping.
 
-## Project layout
+This is an operational rent ledger, not double-entry accounting. It does not model a landlord's bank balance, escrow/client-money trust requirements, expenses, tax treatment, refunds, or full audit controls. Keep source receipts and reconcile each period against bank and M-Pesa statements.
 
-```
-src/
-  server/
-    index.ts        Hono routes for every entity
-    db.ts           D1 adapter (query / get / run)
-    schema.sql      Tables + seed data
-  client/
-    app.tsx         Shell + routing
-    components/
-      dashboard/    Portfolio + month-at-a-glance
-      properties/   List, property detail, property + unit dialogs
-      tenants/      List, tenant detail, tenant dialog
-      leases/       Leases page + lease dialog
-      rent/         Rent ledger + payment dialog
-      maintenance/  Work orders board + work-order dialog
-      settings/     Vendors + rent policy defaults
-      ui/           Vendored shadcn primitives
-    hooks/          use-router, use-app-state
-    lib/utils.ts    cn helper, color palette, date / money / period helpers
-```
+## Security and production readiness
 
-## What's intentionally not included
-
-To keep this template self-hostable with no third-party SaaS dependencies and no public-facing endpoints, these features are out of scope:
-
-- Listing syndication to external rental sites
-- Real credit / background screening (placeholder application records only)
-- 2-way SMS, email blasts, automated texting
-- Online card / ACH payment processing
-- Public tenant or owner portals
-
-These can all be layered on top once you fork the template.
+- Never commit passwords, access tokens, Daraja keys/passkeys, database credentials, or real tenant data.
+- Keep `ALLOW_PAYMENT_SIMULATION` disabled in production.
+- Test payment callbacks, duplicate delivery, account isolation, backup/restore, and failure recovery before collecting real money.
+- Review Cloudflare logs without exposing personal or payment information.
+- See the pitch and implementation materials in [`docs/`](./docs/).
 
 ## License
 
-MIT
+See [`LICENSE`](./LICENSE) for the repository's license terms.
