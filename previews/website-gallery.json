@@ -1,0 +1,30 @@
+[
+  {
+    "src": "previews/ledger.png",
+    "alt": "Conceptual rent ledger for October 2026 with four leases, two paid and two overdue, and the Generate charges button being pressed. Behind it, the notice that every active lease already has a charge for the month, so nothing is charged twice.",
+    "caption": "One charge per lease, every month.",
+    "width": 1600,
+    "height": 1000
+  },
+  {
+    "src": "previews/payment.png",
+    "alt": "Conceptual Record payment dialog for Owen Carter's October rent, showing $900 paid so far and $800 remaining, with $800 being typed into the amount field and Check chosen as the method. Behind it, the ledger row for the same charge, overdue with an $800 balance.",
+    "caption": "Partial payments add up against the charge.",
+    "width": 1600,
+    "height": 1000
+  },
+  {
+    "src": "previews/maintenance.png",
+    "alt": "Conceptual work order for an urgent water leak at 308 Mission Apartments, Unit 3, with the vendor list open and Hill Country Plumbing being picked. Behind it, the open work orders: a repaint before move-in and a bedroom outlet in progress.",
+    "caption": "Every repair has a vendor and a date.",
+    "width": 1600,
+    "height": 1000
+  },
+  {
+    "src": "previews/dashboard.png",
+    "alt": "Conceptual dashboard tiles for October 2026: 80% occupancy with 4 of 5 units let, $2,650 outstanding rent with $4,650 collected, and 3 open work orders, 1 urgent. Behind them, the upcoming lease expirations, with Owen Carter's lease ending on Nov 30, 2026, in 33 days.",
+    "caption": "The month on one screen.",
+    "width": 1600,
+    "height": 1000
+  }
+]
