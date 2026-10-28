@@ -48,6 +48,10 @@ example data. Open an image to see the details.
   were missing.
 - **Maintenance.** Work orders with priority and status, linked to a property,
   unit, tenant and vendor, with a scheduled date and a cost.
+  Each has a reference such as `WO-42` for phone calls and follow-ups. Search by
+  reference, title, description, property, unit, tenant or vendor; choose **All**
+  to include completed and cancelled jobs. References identify records within
+  your install and do not grant public access.
 - **Vendors and policy.** A vendor directory by trade, plus the defaults new
   leases start from: rent due day, late fee, grace days and currency.
 
@@ -73,6 +77,7 @@ Each of these can be built on top once you have your own copy.
 pnpm install
 pnpm dev          # UI on :5173, API on :8787, schema applied to a local database
 pnpm typecheck
+pnpm test
 pnpm build
 ```
 

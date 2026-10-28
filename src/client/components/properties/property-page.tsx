@@ -3,6 +3,7 @@ import { ArrowLeft, Building2, MapPin, Pencil, Plus, Wrench } from "lucide-react
 import { useApp } from "@/context";
 import { api } from "@/api";
 import { cn, colorClasses, formatDate, formatMoney } from "@/lib/utils";
+import { workOrderReference } from "@/lib/work-order-search";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -187,7 +188,7 @@ export function PropertyPage({ id, navigate }: { id: number; navigate: (to: stri
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{w.title}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {[w.unit_name, w.vendor_name, formatDate(w.created_at)].filter(Boolean).join(" · ")}
+                        {[workOrderReference(w.id), w.unit_name, w.vendor_name, formatDate(w.created_at)].filter(Boolean).join(" · ")}
                       </p>
                     </div>
                   </div>
