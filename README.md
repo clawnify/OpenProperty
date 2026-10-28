@@ -11,10 +11,10 @@ with your vendors.
 
 An open-source app template provided by [Clawnify.com](https://clawnify.com).
 
-**Rent is a ledger, not a spreadsheet.** Every active lease gets one charge per
-month, generated with one click and never twice. Payments are recorded against
-the charge, and its status follows from the money: open, partial, paid or
-overdue. "Who owes what this month" is a filter, not an afternoon.
+**Know who has paid this month.** Every active lease gets one charge per month,
+generated with one click and never twice. Payments are recorded against the
+charge, and its status follows from the money: open, partial, paid or overdue.
+Who still owes rent is one filter away.
 
 [![Deploy with Clawnify](https://app.clawnify.com/deploy-button.svg)](https://app.clawnify.com/deploy?repo=clawnify/OpenProperty)
 
@@ -84,8 +84,8 @@ in production.
 
 ## Data
 
-One SQLite database per install. The schema is `src/server/schema.sql`. Defaults
-and sample data are written by the app on first run, not by the schema.
+One SQLite database per install. The schema is `src/server/schema.sql`. The app
+writes the defaults and sample data on first run.
 
 | Table | Holds |
 |---|---|
