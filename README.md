@@ -1,115 +1,108 @@
-<img src="readme-banner.png" alt="OpenProperty preview" width="100%" />
+<img src="readme-banner.png" alt="OpenProperty — properties, units, leases, a monthly rent ledger and maintenance work orders in one app" width="100%" />
 
 # OpenProperty
 
+Property management for landlords and small property managers: properties and
+units, tenants and leases, a monthly rent ledger, and maintenance work orders
+with your vendors.
+
+An open-source app template provided by [Clawnify.com](https://clawnify.com).
+
+**Rent is a ledger, not a spreadsheet.** Every active lease gets one charge per
+month, generated with one click and never twice. Payments are recorded against
+the charge, and its status follows from the money: open, partial, paid or
+overdue. "Who owes what this month" is a filter, not an afternoon.
+
 [![Deploy with Clawnify](https://app.clawnify.com/deploy-button.svg)](https://app.clawnify.com/deploy?repo=clawnify/OpenProperty)
 
-Open-source **property management software** — a self-hosted, cloud-based alternative to TenantCloud, AppFolio, Buildium, and Propertyware for landlords, small property managers, and apartment / multi-family back-office teams.
+## What it does
 
-Rental property management with everything you need to run a portfolio: properties and units, tenants and leases, rent collection and a ledger, maintenance work orders, and a vendor directory.
+- **Dashboard.** Occupancy, active leases, rent collected and outstanding this
+  month, overdue totals, open and urgent work orders, and the leases ending
+  soon.
+- **Properties and units.** Each property shows its type, address, occupancy
+  and its open work orders. A unit tracks bedrooms, bathrooms, size, market rent
+  and status: vacant, occupied, turnover or unavailable.
+- **Tenants.** A searchable list showing each tenant's current unit, and a
+  detail page with contact details, employer, income, emergency contact and
+  lease history.
+- **Leases.** Term, monthly rent, deposit, due day, late fee and status
+  (upcoming, active, ended, cancelled). A lease can have more than one tenant.
+- **Rent ledger.** Step through months, generate the month's charges, record
+  payments by amount, method, date and reference, and see what was charged,
+  collected, outstanding and overdue. Generating again adds only the leases that
+  were missing.
+- **Maintenance.** Work orders with priority and status, linked to a property,
+  unit, tenant and vendor, with a scheduled date and a cost.
+- **Vendors and policy.** A vendor directory by trade, plus the defaults new
+  leases start from: rent due day, late fee, grace days and currency.
 
-> Built on the [Clawnify](https://clawnify.com) template format. Deploy your own copy in minutes, customize freely, own the data.
+A first run seeds three sample properties, five units and three vendors, so the
+app is usable before you add anything. Deleted sample data does not come back on
+a redeploy.
 
-## Features
+## What it deliberately doesn't do
 
-### Dashboard
-- **At-a-glance KPIs** — occupancy rate, active leases, outstanding rent, open work orders
-- **This month's rent** — collected, outstanding, overdue at a glance
-- **Open work orders** + **upcoming lease expirations** — what to act on this week
+- **Take payments.** There is no card or bank processing. The ledger records
+  money that arrived some other way.
+- **Screen applicants.** Applications are records you keep. There is no credit
+  or background check.
+- **Message tenants.** No SMS, email blasts or automated texts.
+- **Publish anything.** No listing syndication, and no public tenant or owner
+  portal.
 
-### Properties & units
-- Property cards with type, address, color tag, occupancy snapshot
-- Per-property page with summary tiles, unit grid, and the property's open work orders
-- Units track bedrooms, bathrooms, square footage, market rent, and status (vacant / occupied / turnover / unavailable)
+Each of these can be built on top once you have your own copy.
 
-### Tenants
-- Searchable list showing each tenant's active unit and contact info
-- Detail page with active lease, contact, employer, income, emergency contact, lease history
-
-### Leases
-- One row per lease with tenant, property · unit, term, monthly rent, and status
-- Filters for active / upcoming / ended / all
-- Edit-in-dialog with start / end / rent / deposit / due day / late fee / status
-
-### Rent ledger
-- One charge per active lease per month, generated idempotently with one click
-- Period navigator (◀ / today / ▶) and totals: charged, collected, outstanding, overdue
-- Record payments by amount, method, date, and reference. Status auto-updates as payments roll in
-- Past payments visible per charge with one-click removal
-
-### Maintenance
-- Work orders with title, description, priority (urgent / high / normal / low), and status (open / assigned / in progress / completed / cancelled)
-- Tabs: open / unassigned / assigned / in progress / completed / all
-- Link work orders to a property, unit, and vendor; track scheduled date and cost
-
-### Vendors & policy
-- Vendor directory by category (plumber / electrician / HVAC / handyman / cleaning / landscaping / general)
-- Rent policy defaults: due day, late fee, grace days, currency
-
-## Stack
-
-- React 19 + Vite + TypeScript
-- Tailwind CSS v4 + shadcn/ui (Radix primitives)
-- Hono on Cloudflare Workers (D1-native — same code locally and in production)
-- `lucide-react` for icons
-- pushState URL routing
-
-## Develop
+## Running it locally
 
 ```bash
 pnpm install
-pnpm dev          # Vite at :5173, Wrangler at :8787 (D1 schema applied automatically)
+pnpm dev          # UI on :5173, API on :8787, schema applied to a local database
 pnpm typecheck
 pnpm build
 ```
 
-The dev script applies `src/server/schema.sql` to the local D1 database, then runs Vite and Wrangler in parallel. The schema seeds 3 sample properties, 5 units, and 3 vendors so the app is usable on first boot.
+## Stack
 
-## Deploy
+React 19, Vite and TypeScript on the client, with Tailwind CSS v4 and shadcn/ui.
+A Hono API on the server, and a SQLite database. The same code runs locally and
+in production.
 
-If you have the Clawnify CLI installed:
+## Data
 
-```bash
-clawnify deploy
-```
+One SQLite database per install. The schema is `src/server/schema.sql`. Defaults
+and sample data are written by the app on first run, not by the schema.
 
-Or wire it up to Cloudflare Workers + D1 directly using the bindings in `wrangler.toml` (binding `DB`, database name `open-property-db`).
+| Table | Holds |
+|---|---|
+| `properties` | buildings, with type, address and a colour tag |
+| `units` | rentable spaces inside a property, with rent and status |
+| `tenants` | people, with contact, employment and emergency details |
+| `leases` | a unit, its primary tenant, term, rent, deposit and late fee |
+| `lease_tenants` | the other tenants on a lease |
+| `rent_charges` | one charge per lease per month, with what has been paid |
+| `payments` | money recorded against a charge |
+| `vendors` | contractors by trade |
+| `work_orders` | maintenance jobs, with priority, status, vendor and cost |
+| `applications` | applicants and where they are in the decision |
+| `settings` | rent policy defaults and currency |
 
 ## Project layout
 
 ```
 src/
   server/
-    index.ts        Hono routes for every entity
-    db.ts           D1 adapter (query / get / run)
-    schema.sql      Tables + seed data
+    index.ts        API routes for every entity, first-run data
+    db.ts           database adapter (query / get / run)
+    schema.sql      tables and indexes
   client/
-    app.tsx         Shell + routing
-    components/
-      dashboard/    Portfolio + month-at-a-glance
-      properties/   List, property detail, property + unit dialogs
-      tenants/      List, tenant detail, tenant dialog
-      leases/       Leases page + lease dialog
-      rent/         Rent ledger + payment dialog
-      maintenance/  Work orders board + work-order dialog
-      settings/     Vendors + rent policy defaults
-      ui/           Vendored shadcn primitives
-    hooks/          use-router, use-app-state
-    lib/utils.ts    cn helper, color palette, date / money / period helpers
+    app.tsx         shell and routing
+    components/     dashboard, properties, tenants, leases, rent,
+                    maintenance, settings, and shadcn/ui primitives
+    hooks/          router and app state
+    lib/utils.ts    colours, dates, money and period helpers
 ```
 
-## What's intentionally not included
+## Licence
 
-To keep this template self-hostable with no third-party SaaS dependencies and no public-facing endpoints, these features are out of scope:
-
-- Listing syndication to external rental sites
-- Real credit / background screening (placeholder application records only)
-- 2-way SMS, email blasts, automated texting
-- Online card / ACH payment processing
-- Public tenant or owner portals
-
-These can all be layered on top once you fork the template.
-
-## License
-
-MIT
+MIT. See [LICENSE](LICENSE).
