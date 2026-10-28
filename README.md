@@ -1,4 +1,7 @@
-<img src="readme-banner.png" alt="OpenProperty — properties, units, leases, a monthly rent ledger and maintenance work orders in one app" width="100%" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="readme-banner-dark.png" />
+  <img src="readme-banner.png" alt="OpenProperty — the monthly rent ledger, with a payment recorded against an overdue charge" width="100%" />
+</picture>
 
 # OpenProperty
 
@@ -14,6 +17,17 @@ the charge, and its status follows from the money: open, partial, paid or
 overdue. "Who owes what this month" is a filter, not an afternoon.
 
 [![Deploy with Clawnify](https://app.clawnify.com/deploy-button.svg)](https://app.clawnify.com/deploy?repo=clawnify/OpenProperty)
+
+## See it in action
+
+Conceptual UI illustrations of the app's main capabilities, with fictional
+example data. Open an image to see the details.
+
+| Rent ledger | Payments |
+| --- | --- |
+| [![October's rent charges, with Generate charges pressed and nothing charged twice](previews/ledger.png)](previews/ledger.png) | [![A partial payment recorded against an overdue charge](previews/payment.png)](previews/payment.png) |
+| **Maintenance** | **Dashboard** |
+| [![An urgent work order with a vendor being picked](previews/maintenance.png)](previews/maintenance.png) | [![Occupancy, rent owed, open work orders and lease expirations](previews/dashboard.png)](previews/dashboard.png) |
 
 ## What it does
 
