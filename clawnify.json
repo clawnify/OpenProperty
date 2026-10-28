@@ -53,5 +53,11 @@
         "placeholder": "Rent due day, late-fee policy, regular vendors, brand colors, special features..."
       }
     ]
+  },
+  "template": {
+    "displayName": "Property",
+    "category": "Operations",
+    "image": "https://raw.githubusercontent.com/clawnify/OpenProperty/master/readme-banner.png",
+    "enabled": true
   }
 }
