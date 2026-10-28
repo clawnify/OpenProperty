@@ -11,6 +11,7 @@ import {
 import { useApp } from "@/context";
 import { api } from "@/api";
 import { cn, daysBetween, formatDate, formatMoney, toIsoDate } from "@/lib/utils";
+import { workOrderReference } from "@/lib/work-order-search";
 import type { DashboardSummary } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -152,7 +153,7 @@ export function DashboardPage({ navigate }: { navigate: (to: string) => void }) 
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{w.title}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {[w.property_name, w.unit_name].filter(Boolean).join(" · ") || "Unassigned"}
+                        {[workOrderReference(w.id), w.property_name, w.unit_name].filter(Boolean).join(" · ")}
                       </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">

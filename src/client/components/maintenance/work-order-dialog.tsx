@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { workOrderReference } from "@/lib/work-order-search";
 import type { Unit, WorkOrder, WorkOrderPriority, WorkOrderStatus } from "@/types";
 
 interface Props {
@@ -133,7 +134,7 @@ export function WorkOrderDialog({ open, onOpenChange, workOrder, defaults, onSav
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{workOrder ? "Edit work order" : "New work order"}</DialogTitle>
+          <DialogTitle>{workOrder ? `Edit work order ${workOrderReference(workOrder.id)}` : "New work order"}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
