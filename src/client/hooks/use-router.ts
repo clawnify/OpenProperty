@@ -8,11 +8,14 @@ export type Route =
   | { name: "tenant"; id: number }
   | { name: "leases" }
   | { name: "rent" }
+  | { name: "rent-bank" }
+  | { name: "rent-reminders" }
   | { name: "maintenance" }
   | { name: "settings" }
   | { name: "not-found" };
 
-function parse(path: string): Route {
+function parse(full: string): Route {
+  const path = full.split("?")[0]; // a query (/settings?tab=reminders) picks a tab, not a page
   if (path === "/" || path === "/dashboard") return { name: "dashboard" };
   if (path === "/properties") return { name: "properties" };
   let m = path.match(/^\/properties\/(\d+)$/);
@@ -22,6 +25,8 @@ function parse(path: string): Route {
   if (m) return { name: "tenant", id: parseInt(m[1], 10) };
   if (path === "/leases") return { name: "leases" };
   if (path === "/rent") return { name: "rent" };
+  if (path === "/rent/bank") return { name: "rent-bank" };
+  if (path === "/rent/reminders") return { name: "rent-reminders" };
   if (path === "/maintenance") return { name: "maintenance" };
   if (path === "/settings") return { name: "settings" };
   return { name: "not-found" };

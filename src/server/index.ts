@@ -1,8 +1,9 @@
-import { Hono, type Context } from "hono";
+import { Hono } from "hono";
 import { z } from "zod";
 import { initDB, query, get, run } from "./db";
-
-type Env = { Bindings: { DB: D1Database } };
+import { intParam, parseJson, type Env } from "./http";
+import { registerBankRoutes } from "./bank";
+import { registerReminderRoutes } from "./reminders";
 
 const app = new Hono<Env>();
 
@@ -93,24 +94,6 @@ async function ensureSeeded(): Promise<void> {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────
-
-const intParam = (raw: string | undefined): number | null => {
-  if (!raw) return null;
-  const n = parseInt(raw, 10);
-  return Number.isFinite(n) ? n : null;
-};
-
-async function parseJson<T>(c: Context, schema: z.ZodType<T>): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
-  let body: unknown;
-  try {
-    body = await c.req.json();
-  } catch {
-    return { ok: false, error: "Invalid JSON" };
-  }
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ") };
-  return { ok: true, data: parsed.data };
-}
 
 function buildUpdate(fields: Record<string, unknown>): { sets: string[]; params: unknown[] } {
   const sets: string[] = [];
@@ -941,6 +924,11 @@ app.put("/api/settings", async (c) => {
   for (const r of rows) out[r.key] = r.value;
   return c.json({ settings: out });
 });
+
+// ── Bank matching and late-rent reminders ──────────────────────────
+
+registerBankRoutes(app);
+registerReminderRoutes(app);
 
 // ── Health ─────────────────────────────────────────────────────────
 

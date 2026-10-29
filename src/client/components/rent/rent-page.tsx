@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PaymentDialog } from "./payment-dialog";
 import type { ChargeStatus, RentCharge } from "@/types";
 import { PageShell } from "@/components/page-shell";
+import { RentTabs } from "./rent-tabs";
 
 const STATUS_TONE: Record<ChargeStatus, string> = {
   open: "bg-info-tint text-info",
@@ -18,7 +19,7 @@ const STATUS_TONE: Record<ChargeStatus, string> = {
   waived: "bg-muted text-muted-foreground",
 };
 
-export function RentPage() {
+export function RentPage({ navigate }: { navigate: (to: string) => void }) {
   const app = useApp();
   const [period, setPeriod] = useState<string>(currentPeriod());
   const [charges, setCharges] = useState<RentCharge[]>([]);
@@ -45,6 +46,7 @@ export function RentPage() {
     try {
       const res = await app.generateCharges(period);
       await load();
+      void app.refreshAttention();
       app.setError(res.created ? null : "All active leases already have a charge for this period.");
     } catch (err) {
       app.setError((err as Error).message);
@@ -99,6 +101,8 @@ export function RentPage() {
         </>
       }
     >
+        <RentTabs active="ledger" navigate={navigate} />
+
         <section className="grid grid-cols-2 gap-4 md:grid-cols-4">
           <Stat label="Charged" value={formatMoney(totals.charged, app.settings.currency)} />
           <Stat label="Collected" value={formatMoney(totals.collected, app.settings.currency)} tone="positive" />
@@ -204,7 +208,7 @@ export function RentPage() {
         open={paymentTarget !== null}
         onOpenChange={(o) => { if (!o) setPaymentTarget(null); }}
         charge={paymentTarget}
-        onSaved={load}
+        onSaved={() => { void load(); void app.refreshAttention(); }}
       />
     </PageShell>
   );

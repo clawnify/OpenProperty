@@ -75,3 +75,9 @@ export function daysBetween(a: string, b: string): number {
   const db = new Date(`${b}T00:00:00`).getTime();
   return Math.round((db - da) / 86_400_000);
 }
+
+/** Money to the cent, for bank lines: a statement says 84.50, not 85. */
+export function formatExact(n: number | null | undefined, currency = "USD"): string {
+  if (n === null || n === undefined || Number.isNaN(n)) return "\u2014";
+  return new Intl.NumberFormat(undefined, { style: "currency", currency, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}

@@ -49,6 +49,8 @@ export function useAppState() {
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** What in Rent is waiting for a person: bank payments to review, reminders due today. */
+  const [attention, setAttention] = useState({ bank_review: 0, reminders_due: 0 });
 
   // Lookup loaders ─────────────────────────────────────────────────
 
@@ -61,6 +63,14 @@ export function useAppState() {
     setProperties(props.properties);
     setVendors(vens.vendors);
     setSettings(parseSettings(st.settings));
+  }, []);
+
+  const refreshAttention = useCallback(async () => {
+    try {
+      setAttention(await api<{ bank_review: number; reminders_due: number }>("GET", "/api/rent/attention"));
+    } catch {
+      /* the counts are a hint; a failed read keeps the last ones */
+    }
   }, []);
 
   const updateSettings = useCallback(async (patch: Partial<AppSettings>) => {
@@ -78,13 +88,14 @@ export function useAppState() {
       try {
         setLoading(true);
         await refreshLookups();
+        void refreshAttention();
       } catch (err) {
         setError((err as Error).message);
       } finally {
         setLoading(false);
       }
     })();
-  }, [refreshLookups]);
+  }, [refreshLookups, refreshAttention]);
 
   // Property mutations ─────────────────────────────────────────────
 
@@ -254,8 +265,9 @@ export function useAppState() {
     // data
     properties, vendors, settings,
     loading, error, setError,
+    attention,
     // refresh
-    refreshLookups,
+    refreshLookups, refreshAttention,
     // settings
     updateSettings,
     // properties / units

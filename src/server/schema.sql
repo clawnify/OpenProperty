@@ -166,5 +166,77 @@ CREATE TABLE IF NOT EXISTS applications (
 
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 
+-- ── Bank statements (money in, matched to rent) ───────────────────
+-- Only new tables here, never a changed one: an existing install picks them
+-- up on its next deploy with no migration of the rent data it already has.
+
+CREATE TABLE IF NOT EXISTS bank_imports (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  filename TEXT,
+  format TEXT NOT NULL DEFAULT 'csv',          -- 'csv' | 'camt053' | 'api'
+  credits INTEGER NOT NULL DEFAULT 0,          -- incoming payments in the file
+  duplicates INTEGER NOT NULL DEFAULT 0,       -- already imported from an earlier statement
+  auto_matched INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS bank_transactions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  import_id INTEGER REFERENCES bank_imports(id) ON DELETE SET NULL,
+  booked_on TEXT NOT NULL,                     -- 'YYYY-MM-DD'
+  amount REAL NOT NULL,                        -- money in, always > 0
+  currency TEXT,
+  payer_name TEXT,
+  payer_account TEXT,                          -- IBAN or account number, no spaces
+  reference TEXT,
+  bank_ref TEXT,                               -- the bank's own id for the line, when it gives one
+  fingerprint TEXT NOT NULL,                   -- the same line in two overlapping statements is one payment
+  status TEXT NOT NULL DEFAULT 'review',       -- 'review' | 'matched' | 'ignored'
+  lease_id INTEGER REFERENCES leases(id) ON DELETE SET NULL,  -- the lease it paid, once matched
+  matched_by TEXT,                             -- 'auto' | 'person' | 'agent'
+  note TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_bank_tx_fingerprint ON bank_transactions(fingerprint);
+CREATE INDEX IF NOT EXISTS idx_bank_tx_status ON bank_transactions(status, booked_on);
+
+-- Who pays for a lease, learned when a person confirms a match: the IBAN when
+-- the bank gives one, else the sender's name (stored normalised).
+CREATE TABLE IF NOT EXISTS bank_payers (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  lease_id INTEGER NOT NULL REFERENCES leases(id) ON DELETE CASCADE,
+  payer_account TEXT,
+  payer_name TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_bank_payers_lease ON bank_payers(lease_id);
+
+-- The payments a bank transaction became: one transfer can pay two months.
+CREATE TABLE IF NOT EXISTS bank_matches (
+  transaction_id INTEGER NOT NULL REFERENCES bank_transactions(id) ON DELETE CASCADE,
+  payment_id INTEGER NOT NULL REFERENCES payments(id) ON DELETE CASCADE,
+  PRIMARY KEY (transaction_id, payment_id)
+);
+
+-- ── Late-rent reminders ──────────────────────────────────────────
+-- One row per charge and step, written when the reminder is sent (or skipped).
+-- A person sends today; sent_by and channel leave room for an agent to.
+CREATE TABLE IF NOT EXISTS rent_reminders (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  charge_id INTEGER NOT NULL REFERENCES rent_charges(id) ON DELETE CASCADE,
+  step TEXT NOT NULL,                          -- 'before_due' | 'late' | 'final'
+  status TEXT NOT NULL DEFAULT 'sent',         -- 'sent' | 'skipped'
+  channel TEXT NOT NULL DEFAULT 'email',       -- 'email' | 'sms' | 'letter' | 'phone' | 'other'
+  sent_by TEXT NOT NULL DEFAULT 'person',      -- 'person' | 'agent'
+  recipient TEXT,
+  subject TEXT,
+  body TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_reminders_charge_step ON rent_reminders(charge_id, step);
+
 -- Demo data is seeded by the app on first read (ensureSeeded in
 -- src/server/index.ts), never here: this file is applied as DDL only.
