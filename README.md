@@ -6,8 +6,8 @@
 # OpenProperty
 
 Property management for landlords and small property managers: properties and
-units, tenants and leases, a monthly rent ledger, and maintenance work orders
-with your vendors.
+units, tenants and leases, a monthly rent ledger matched from your bank
+statement, late-rent reminders, and maintenance work orders with your vendors.
 
 An open-source app template provided by [Clawnify.com](https://clawnify.com).
 
@@ -46,6 +46,24 @@ example data. Open an image to see the details.
   payments by amount, method, date and reference, and see what was charged,
   collected, outstanding and overdue. Generating again adds only the leases that
   were missing.
+- **Bank matching.** Import a statement from your bank: a CSV from any bank
+  (the columns, date order and decimal mark are recognised, and you confirm them
+  before anything is saved) or a CAMT.053 file from a European bank. Each payment
+  in is matched to the rent it pays by who sent it, not by its reference, which
+  tenants' banking apps fill with anything. Confirm a payer once and their next
+  payment of exactly what they owe is recorded on import. A partial payment, a
+  new payer or two leases owing the same amount wait for you with a suggestion
+  and the reason for it. Two months in one transfer pay the oldest month first,
+  or the month the reference names. A line already imported from an overlapping
+  statement is skipped, and every match can be undone.
+- **Late-rent reminders.** On the day a reminder falls due, it is listed with
+  the email already written: the balance, the due date, the days late and the
+  lease's late fee. By default that is a late notice the day after the grace
+  period and a final notice at 14 days, and both the timing and the wording are
+  yours to change. Open it in your own email, send it, mark it sent. If you come
+  back after three weeks you get one final notice, not every step you missed.
+  Once the rent is matched, nothing more is offered, and a tenant whose payment
+  may be waiting in bank matching is flagged before you write to them.
 - **Maintenance.** Work orders with priority and status, linked to a property,
   unit, tenant and vendor, with a scheduled date and a cost.
   Each has a reference such as `WO-42` for phone calls and follow-ups. Search by
@@ -65,7 +83,8 @@ a redeploy.
   money that arrived some other way.
 - **Screen applicants.** Applications are records you keep. There is no credit
   or background check.
-- **Message tenants.** No SMS, email blasts or automated texts.
+- **Send messages for you.** Reminders are drafted here and sent from your own
+  email. The app sends nothing to tenants, by email, SMS or otherwise.
 - **Publish anything.** No listing syndication, and no public tenant or owner
   portal.
 

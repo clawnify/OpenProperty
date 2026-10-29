@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import type { Vendor, VendorCategory } from "@/types";
 import { PageShell } from "@/components/page-shell";
+import { ReminderSchedule } from "./reminder-schedule";
 
 const COLORS = ["sky", "emerald", "amber", "rose", "violet", "fuchsia", "teal", "orange", "slate"];
 
@@ -33,18 +34,23 @@ const VENDOR_CATEGORIES: { value: VendorCategory; label: string }[] = [
   { value: "general", label: "General" },
 ];
 
+const SETTINGS_TABS = ["vendors", "policy", "reminders"];
+
 export function SettingsPage() {
+  // Other pages link straight to a tab: /settings?tab=reminders.
+  const asked = new URLSearchParams(window.location.search).get("tab") ?? "";
   return (
     <PageShell
       title="Settings"
-      meta="Vendors and rent policy defaults"
+      meta="Vendors, rent policy and reminders"
       width="max-w-5xl"
     >
 
-        <Tabs defaultValue="vendors">
+        <Tabs defaultValue={SETTINGS_TABS.includes(asked) ? asked : "vendors"}>
           <TabsList>
             <TabsTrigger value="vendors">Vendors</TabsTrigger>
             <TabsTrigger value="policy">Rent policy</TabsTrigger>
+            <TabsTrigger value="reminders">Reminders</TabsTrigger>
           </TabsList>
 
           <TabsContent value="vendors" className="mt-4">
@@ -52,6 +58,9 @@ export function SettingsPage() {
           </TabsContent>
           <TabsContent value="policy" className="mt-4">
             <PolicyTab />
+          </TabsContent>
+          <TabsContent value="reminders" className="mt-4">
+            <ReminderSchedule />
           </TabsContent>
         </Tabs>
     </PageShell>

@@ -217,3 +217,93 @@ export type NewLease = Partial<Omit<Lease, "id" | "created_at" | "unit_name" | "
 export type NewWorkOrder = Partial<Omit<WorkOrder, "id" | "created_at" | "property_name" | "property_color" | "unit_name" | "tenant_first_name" | "tenant_last_name" | "vendor_name" | "vendor_color">> & { title: string };
 export type NewVendor = Partial<Omit<Vendor, "id" | "created_at">> & { name: string };
 export type NewApplication = Partial<Omit<Application, "id" | "created_at" | "unit_name" | "property_name">> & { first_name: string; last_name: string };
+
+// ── Bank matching ──────────────────────────────────────────────────
+
+export type BankEvidence =
+  | "known_account" | "known_name" | "tenant_name" | "tenant_last_name" | "reference_unit" | "amount_exact" | "amount_only";
+
+export interface LeaseLabel {
+  lease_id: number;
+  property_name: string | null;
+  unit_name: string | null;
+  tenant_name: string | null;
+}
+
+export interface BankTransaction {
+  id: number;
+  import_id: number | null;
+  booked_on: string;
+  amount: number;
+  currency: string | null;
+  payer_name: string | null;
+  payer_account: string | null;
+  reference: string | null;
+  bank_ref: string | null;
+  status: "review" | "matched" | "ignored";
+  lease_id: number | null;
+  matched_by: "auto" | "person" | "agent" | null;
+  note: string | null;
+  /** To review: the suggested match, worked out fresh on every read. */
+  proposal?: {
+    kind: "auto" | "suggested" | "none";
+    lease: LeaseLabel | null;
+    allocations: { charge_id: number; amount: number; period: string | null }[];
+    unapplied: number;
+    evidence: BankEvidence[];
+    candidates: (LeaseLabel & { owing: number })[];
+  };
+  /** Matched: the lease and the payments it became. */
+  lease?: LeaseLabel | null;
+  payments?: { payment_id: number; amount: number; charge_id: number; period: string }[];
+  unapplied?: number;
+}
+
+export interface BankLease extends LeaseLabel {
+  open: { id: number; lease_id: number; period: string; due_date: string; balance: number }[];
+  owing: number;
+}
+
+export interface ImportSummary {
+  lines: number;
+  money_out_skipped: number;
+  duplicates: number;
+  imported: number;
+  auto_matched: number;
+  to_review: number;
+}
+
+// ── Late-rent reminders ────────────────────────────────────────────
+
+export interface DueReminderItem {
+  charge_id: number;
+  lease_id: number;
+  period: string;
+  due_date: string;
+  amount: number;
+  balance: number;
+  days_late: number;
+  step: { key: string; label: string };
+  tenant: { id: number | null; name: string | null; email: string | null; phone: string | null };
+  property_name: string | null;
+  unit_name: string | null;
+  draft: { to: string | null; subject: string; body: string };
+  pending_payment: { transaction_id: number; amount: number; booked_on: string } | null;
+}
+
+export interface SentReminder {
+  id: number;
+  charge_id: number;
+  step: string;
+  status: "sent" | "skipped";
+  channel: string;
+  sent_by: "person" | "agent";
+  recipient: string | null;
+  subject: string | null;
+  created_at: string;
+  period: string;
+  first_name: string | null;
+  last_name: string | null;
+  unit_name: string | null;
+  property_name: string | null;
+}

@@ -94,3 +94,16 @@ INSERT INTO work_orders (property_id, unit_id, tenant_id, vendor_id, title, desc
 INSERT INTO applications (unit_id, first_name, last_name, email, phone, monthly_income, employer, desired_move_in, status) VALUES
   (4, 'Chloe', 'Bennett', 'chloe.bennett@example.com', '512-555-0151', 5300, 'Charles Schwab', date('now', 'start of month', '+1 month'), 'screening'),
   (4, 'Daniel', 'Moore', 'daniel.moore@example.com', '512-555-0152', 4700, 'H-E-B', date('now', '+14 days'), 'new');
+-- A bank statement imported this month. Maya's rent was matched on import: her
+-- name was confirmed for her lease before. Three payments wait for a person:
+-- Owen's balance (his name, the exact amount), Hannah's transfer (her surname,
+-- the exact amount) and a refund that is not rent. Payment 10 is Maya's.
+INSERT INTO bank_imports (id, filename, format, credits, duplicates, auto_matched) VALUES
+  (1, 'checking-statement.csv', 'csv', 4, 0, 1);
+INSERT INTO bank_transactions (id, import_id, booked_on, amount, currency, payer_name, payer_account, reference, bank_ref, fingerprint, status, lease_id, matched_by) VALUES
+  (1, 1, date('now', 'start of month'), 2300, 'USD', 'MAYA PATEL', NULL, 'ACH RENT MAYA PATEL', NULL, 'demo:1', 'matched', 1, 'auto'),
+  (2, 1, date('now', '-1 day'), 950, 'USD', 'OWEN BROOKS', NULL, 'Rest of rent, Unit 3', NULL, 'demo:2', 'review', NULL, NULL),
+  (3, 1, date('now', '-1 day'), 1950, 'USD', 'H LEE', NULL, 'Online transfer', NULL, 'demo:3', 'review', NULL, NULL),
+  (4, 1, date('now', '-1 day'), 40, 'USD', 'CITY OF AUSTIN UTILITIES', NULL, 'Deposit refund', NULL, 'demo:4', 'review', NULL, NULL);
+INSERT INTO bank_matches (transaction_id, payment_id) VALUES (1, 10);
+INSERT INTO bank_payers (lease_id, payer_account, payer_name) VALUES (1, NULL, 'maya patel');

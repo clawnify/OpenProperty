@@ -11,6 +11,8 @@ import { TenantsList } from "./components/tenants/tenants-list";
 import { TenantPage } from "./components/tenants/tenant-page";
 import { LeasesPage } from "./components/leases/leases-page";
 import { RentPage } from "./components/rent/rent-page";
+import { BankPage } from "./components/rent/bank-page";
+import { RemindersPage } from "./components/rent/reminders-page";
 import { MaintenancePage } from "./components/maintenance/maintenance-page";
 import { SettingsPage } from "./components/settings/settings-page";
 
@@ -45,6 +47,7 @@ const ADMIN: AppNavItem[] = [
 function activeFor(route: Route): string {
   if (route.name === "property") return "properties";
   if (route.name === "tenant") return "tenants";
+  if (route.name === "rent-bank" || route.name === "rent-reminders") return "rent";
   return route.name;
 }
 
@@ -57,9 +60,12 @@ export function App() {
     reportLocation(path);
   }, [path]);
 
+  // Rent carries a count of what waits for a person: payments to review, reminders due.
+  const waiting = state.attention.bank_review + state.attention.reminders_due;
+  const operations = OPERATIONS.map((item) => (item.id === "rent" && waiting > 0 ? { ...item, count: waiting } : item));
   const groups = [
     { items: PORTFOLIO },
-    { label: "Operations", items: OPERATIONS },
+    { label: "Operations", items: operations },
     { label: "Admin", items: ADMIN },
   ];
 
@@ -91,7 +97,9 @@ export function App() {
               {route.name === "tenants" && <TenantsList navigate={navigate} />}
               {route.name === "tenant" && <TenantPage id={route.id} navigate={navigate} />}
               {route.name === "leases" && <LeasesPage navigate={navigate} />}
-              {route.name === "rent" && <RentPage />}
+              {route.name === "rent" && <RentPage navigate={navigate} />}
+              {route.name === "rent-bank" && <BankPage navigate={navigate} />}
+              {route.name === "rent-reminders" && <RemindersPage navigate={navigate} />}
               {route.name === "maintenance" && <MaintenancePage />}
               {route.name === "settings" && <SettingsPage />}
               {route.name === "not-found" && (
