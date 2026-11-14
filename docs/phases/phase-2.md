@@ -29,7 +29,7 @@ Pending users cannot use the portal; admins can **approve / reject / suspend** a
 | Medium | Payment ledger RPC (record + delete) | **Done** Phase 1.5 — `public.record_payment` / `delete_payment` |
 | Medium | `FORCE ROW LEVEL SECURITY` on Phase 1 tables | **Done** Phase 1.5 — Leases, LeaseTenants, RentCharges, Payments, Vendors, Settings |
 | Medium | Narrow `vendors_select` for landlords | **Done** Phase 1.5 — staff/admin only |
-| Should | Soft-fail bootstrap / `generateCharges` error swallowing | Tracked in [`docs/deferred-work.md`](../deferred-work.md) |
+| Should | Soft-fail bootstrap / `generateCharges` error swallowing | **Done** — Rent Generate charges → NoticeBanner / ErrorBanner (`feedbackForGenerateCharges`) |
 | Perf | Dashboard / charges N+1 | Tracked in [`docs/deferred-work.md`](../deferred-work.md) |
 | Should | Payment ledger / status RPC tests | Tracked in [`docs/deferred-work.md`](../deferred-work.md) |
 

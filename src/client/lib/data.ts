@@ -1124,7 +1124,9 @@ export async function listCharges(period?: string): Promise<RentCharge[]> {
   return charges.map((c) => mapCharge(c, leaseExtras.get(c.lease_id)));
 }
 
-export async function generateCharges(period: string): Promise<{ created: number; period: string }> {
+export async function generateCharges(
+  period: string,
+): Promise<{ created: number; period: string; activeLeases: number }> {
   // Slim active-lease fetch — charge gen only needs id / rent / due day (no unit/tenant enrich).
   // Page past PostgREST max-rows so large portfolios are not silently truncated.
   const [leases, existingRows] = await Promise.all([
@@ -1139,7 +1141,8 @@ export async function generateCharges(period: string): Promise<{ created: number
       supabase.from("RentCharges").select("lease_id").eq("period", period).range(from, to),
     ),
   ]);
-  if (!leases.length) return { created: 0, period };
+  const activeLeases = leases.length;
+  if (!activeLeases) return { created: 0, period, activeLeases: 0 };
 
   const existing = new Set(existingRows.map((r) => r.lease_id));
 
@@ -1158,7 +1161,7 @@ export async function generateCharges(period: string): Promise<{ created: number
       };
     });
 
-  if (!toInsert.length) return { created: 0, period };
+  if (!toInsert.length) return { created: 0, period, activeLeases };
 
   // Batch upsert: UNIQUE(lease_id, period). ignoreDuplicates is load-bearing — never switch to
   // merge-duplicates (would overwrite amount_paid / status on races). RETURNING = inserted only.
@@ -1170,7 +1173,7 @@ export async function generateCharges(period: string): Promise<{ created: number
     })
     .select("id");
   if (insertErr) throwSb(insertErr);
-  return { created: (inserted ?? []).length, period };
+  return { created: (inserted ?? []).length, period, activeLeases };
 }
 
 export async function listPayments(chargeId: number): Promise<Payment[]> {

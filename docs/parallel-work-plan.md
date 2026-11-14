@@ -453,7 +453,8 @@ Product has reopened R6. Build notifications per phase-6 DoD (start with staff e
 | Dashboard/charges N+1 | **deferred** | |
 | Slim Users / Applications queries; paginate Users RPC; paginate docs >200 | **deferred** | |
 | Shared `formatBytes` / doc row; staff title edit after visibility widen; MIME allowlist | **deferred** · **gap R5** | |
-| Soft-fail `generateCharges` toast; Phase 1.5 medium payment polish | **deferred** | |
+| Soft-fail `generateCharges` toast | **done** | NoticeBanner / ErrorBanner + `activeLeases` distinction |
+| Phase 1.5 medium payment polish | **deferred** | |
 
 **Kickoff prompt:**
 

@@ -48,8 +48,10 @@ describe("[R8] Admin web portal", () => {
       const period = "2098-06";
       const first = await data.generateCharges(period);
       expect(first.created).toBe(2);
+      expect(first.activeLeases).toBeGreaterThanOrEqual(2);
       const second = await data.generateCharges(period);
       expect(second.created).toBe(0);
+      expect(second.activeLeases).toBe(first.activeLeases);
 
       const listed = await data.listCharges(period);
       expect(listed).toHaveLength(2);

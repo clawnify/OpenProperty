@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Receipt, Sparkles } from "lucide-react";
 import { useApp } from "@/context";
 import { queryPeriod, type DeepLinkProps } from "@/lib/deep-link";
+import { feedbackForGenerateCharges } from "@/lib/generate-charges-feedback";
 import { addMonths, cn, currentPeriod, formatDate, formatMoney, formatPeriod } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,13 +37,16 @@ export function RentPage({ search = "", replace }: DeepLinkProps = {}) {
   const listCharges = app.listCharges;
   const setError = app.setError;
 
-  async function load() {
+  /** @returns true when the period list refreshed; false when listCharges failed (sets ErrorBanner). */
+  async function load(): Promise<boolean> {
     try {
       setLoading(true);
       const list = await listCharges(period);
       setCharges(list);
+      return true;
     } catch (err) {
       setError((err as Error).message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -72,10 +75,37 @@ export function RentPage({ search = "", replace }: DeepLinkProps = {}) {
     setGenerating(true);
     try {
       const res = await app.generateCharges(period);
-      await load();
-      app.setError(res.created ? null : "All active leases already have a charge for this period.");
+      const reloaded = await load();
+      const feedback = feedbackForGenerateCharges(
+        {
+          created: res.created,
+          periodLabel: formatPeriod(period),
+          activeLeases: res.activeLeases,
+        },
+        null,
+      );
+      if (!reloaded) {
+        // Keep/enrich the load error — do not wipe it with a green success toast.
+        app.setNotice(null);
+        if (res.created > 0) {
+          const noun = res.created === 1 ? "charge" : "charges";
+          app.setError(
+            `Created ${res.created} ${noun}, but the list failed to refresh.`,
+          );
+        }
+        return;
+      }
+      if (feedback.kind === "notice") {
+        app.setError(null);
+        app.setNotice(feedback.message);
+      } else {
+        app.setNotice(null);
+        app.setError(feedback.message);
+      }
     } catch (err) {
-      app.setError((err as Error).message);
+      const feedback = feedbackForGenerateCharges(null, err);
+      app.setNotice(null);
+      app.setError(feedback.message);
     } finally {
       setGenerating(false);
     }
