@@ -32,3 +32,4 @@ Until that click, the workflow still runs on PRs but merge is not blocked by Git
 - Do **not** require Playwright (`pnpm test:browser`) or the full dashboard run in this gate — those are slower / optional.
 - R6 notification todos stay as `test.todo` until **WS-L**; they must not fail CI.
 - Action versions are pinned by commit SHA in the workflow (not floating `@v4` tags alone).
+- Related Auth owner click (leaked-password + min length): [`docs/ops/auth-password-policy.md`](./auth-password-policy.md).

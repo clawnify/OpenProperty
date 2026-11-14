@@ -79,7 +79,7 @@ Backlog for **WS-S** / **WS-R** / **WS-I** (see Project store `docs/wave3-plan.m
 | 4 | Last-admin guard on `admin_set_user_role` / `set_account_status` | **WS-S S2** | S–M | **No** mig overlap | **Done in PR #40** — `20261114080000_last_admin_guard.sql` (apply live still pending ops; never live-only) |
 | 5 | Require `email_confirmed_at` before Approve (+ Users badge) | **WS-S S2** | S–M | **No** mig overlap | **Done in PR #39** — `20261114070000_require_email_confirmed_before_approve.sql` + Users badge/disable (apply live still pending ops; never live-only) |
 | 6 | Enforce 5-photo **DB** cap per maintenance request (FE already slices to 5) | **WS-S S2** | S | **No** mig; avoid K dialog thrash | **Done in PR #42** — `20261114090000_maintenance_photos_max_5.sql` + cumulative FE slots (apply live still pending ops; never live-only) |
-| 7 | Leaked-password protection + min length (Auth + UI) | **WS-S S3** | S | Yes | Queued |
+| 7 | Leaked-password protection + min length (Auth + UI) | **WS-S S3** | S | Yes | **UI min length shipped** (`PASSWORD_MIN_LENGTH=8` on signup/reset only; login not enforced); **owner must enable** leaked-password + Auth min length — see [`docs/ops/auth-password-policy.md`](./ops/auth-password-policy.md) |
 | 8 | Staging + migration version / history repair | **WS-I** | M | I owns (not dual with S) | **Staffed** — status SoT: `docs/ops/schema-migrations.md` § Staging / §E |
 | 9 | Login `?redirect=` (Phase 4b) — path-only; reject open redirects | **WS-R** | S | Yes | **Staffed** |
 | 10 | Settings **admin-only** (RLS + staff nav/route) | **WS-S S2** | S | **No** mig overlap | **Done in PR #38** — `20261114060000_*` (apply live still pending ops; never live-only) |

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 import { intentLoginLabel } from "@/lib/safe-redirect";
 
 interface Props {
@@ -18,6 +19,7 @@ export function LoginPage({ onLogin, onSignup, onForgot, error, configured }: Pr
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [info, setInfo] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   // Capture once — login URL intent does not change while this screen is mounted.
   const [intent] = useState(() => new URLSearchParams(window.location.search).get("intent"));
   const subtitle =
@@ -26,8 +28,15 @@ export function LoginPage({ onLogin, onSignup, onForgot, error, configured }: Pr
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim() || !password) return;
+    // Creation only — login must accept Auth-valid shorter passwords (emulator/Auth floor may be 6).
+    if (mode === "signup" && password.length < PASSWORD_MIN_LENGTH) {
+      setLocalError(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
+      setInfo(null);
+      return;
+    }
     setBusy(true);
     setInfo(null);
+    setLocalError(null);
     try {
       if (mode === "login") {
         await onLogin(email.trim(), password);
@@ -63,8 +72,8 @@ export function LoginPage({ onLogin, onSignup, onForgot, error, configured }: Pr
               <code>.env.example</code> to <code>.env</code>.
             </p>
           )}
-          {error && (
-            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>
+          {(localError || error) && (
+            <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{localError ?? error}</p>
           )}
           {info && (
             <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-900">{info}</p>
@@ -89,8 +98,13 @@ export function LoginPage({ onLogin, onSignup, onForgot, error, configured }: Pr
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={mode === "signup" ? PASSWORD_MIN_LENGTH : undefined}
             />
+            {mode === "signup" && (
+              <p className="text-xs text-muted-foreground">
+                At least {PASSWORD_MIN_LENGTH} characters.
+              </p>
+            )}
           </div>
           <Button type="submit" className="w-full" disabled={busy || !configured}>
             {busy
@@ -121,6 +135,7 @@ export function LoginPage({ onLogin, onSignup, onForgot, error, configured }: Pr
             onClick={() => {
               setMode(mode === "login" ? "signup" : "login");
               setInfo(null);
+              setLocalError(null);
             }}
           >
             {mode === "login" ? "Need an account? Sign up" : "Already have an account? Sign in"}

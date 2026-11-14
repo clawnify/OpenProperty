@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PASSWORD_MIN_LENGTH } from "@/lib/password-policy";
 
 interface RequestProps {
   onSubmit: (email: string) => Promise<void>;
@@ -76,11 +77,16 @@ interface ConfirmProps {
 export function ResetConfirmPage({ onSubmit, onDone, error }: ConfirmProps) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return;
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setLocalError(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
+      return;
+    }
     setBusy(true);
+    setLocalError(null);
     try {
       await onSubmit(password);
       onDone();
@@ -95,7 +101,9 @@ export function ResetConfirmPage({ onSubmit, onDone, error }: ConfirmProps) {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-white to-emerald-50 p-6">
       <form onSubmit={submit} className="w-full max-w-md space-y-4 rounded-xl border bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold">Choose a new password</h1>
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+        {(localError || error) && (
+          <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">{localError ?? error}</p>
+        )}
         <div className="space-y-2">
           <Label htmlFor="new-password">New password</Label>
           <Input
@@ -104,9 +112,12 @@ export function ResetConfirmPage({ onSubmit, onDone, error }: ConfirmProps) {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            minLength={8}
+            minLength={PASSWORD_MIN_LENGTH}
             required
           />
+          <p className="text-xs text-muted-foreground">
+            At least {PASSWORD_MIN_LENGTH} characters.
+          </p>
         </div>
         <Button type="submit" disabled={busy}>
           {busy ? "Saving…" : "Update password"}
