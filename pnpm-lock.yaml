@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@clawnify/app':
-        specifier: ^0.2.1
-        version: 0.2.1(@cloudflare/workers-types@4.20260426.1)(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(@phosphor-icons/react@2.1.10(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(hono@4.12.15)(react@19.2.5)
+        specifier: ^0.4.8
+        version: 0.4.8(@cloudflare/workers-types@4.20260426.1)(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(@phosphor-icons/react@2.1.10(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(hono@4.12.15)(react@19.2.5)
       '@clawnify/db':
-        specifier: ^0.4.1
-        version: 0.4.1(@cloudflare/workers-types@4.20260426.1)
+        specifier: ^0.4.3
+        version: 0.4.3(@cloudflare/workers-types@4.20260426.1)
       '@phosphor-icons/react':
         specifier: ^2.1.10
         version: 2.1.10(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -196,8 +196,8 @@ packages:
     resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
     engines: {node: '>=6.9.0'}
 
-  '@clawnify/app@0.2.1':
-    resolution: {integrity: sha512-t6fx4rnbEAewU3fH/WGKfWhfhZgVbLp1JgnpCR0YSHaE6rYwxEmgHAYlN3q5gSjYutsWmXANFqro3wuyxWZlTA==}
+  '@clawnify/app@0.4.8':
+    resolution: {integrity: sha512-kDeP5J67x6BkTcdFPKgmr3bHuTKyhny2XXkrnyhlHXb4+nVNSYDgNWyeam/Pwkx6wnryvZ3nkv/VAlCDL0bZiA==}
     peerDependencies:
       '@hono/zod-openapi': '>=0.18 <1'
       '@phosphor-icons/react': '>=2'
@@ -209,11 +209,11 @@ packages:
       react:
         optional: true
 
-  '@clawnify/db@0.4.1':
-    resolution: {integrity: sha512-Ck9RGqEElt6P/3S9quxvr2MIg8mZk1n9wFftH3PpGPFnpA6hbk0td67oaioeMRuDCn7vePcJCeyYEkbvNVYy/g==}
+  '@clawnify/db@0.4.3':
+    resolution: {integrity: sha512-7CqhOilLT3xjyKwO1+B4hfo/Cy2jpkLfpmgXaiQUpKLmvyPYtqOf+3w+QQyGo0QWy5QzjN60HCX0COjk055ldg==}
 
-  '@clawnify/routes@0.2.2':
-    resolution: {integrity: sha512-+s7gjRyH8bmIUHQDHmmwGyUeEcV5m+IoWEYr2tLiWdVW7WKlFlgeKIuJ61vW9mc9k4TizL+B+Tg8qJ72zAbvOA==}
+  '@clawnify/routes@0.3.0':
+    resolution: {integrity: sha512-ALKVoN1ui9KXSSoybSKumEiJ7fTAe793y2HwCPGEkvXlgV29yAGXad8qVOeGYzrKe6KACJ8twFA4uheQrJSmqA==}
     peerDependencies:
       '@hono/zod-openapi': '>=0.18 <1'
       hono: '*'
@@ -2422,10 +2422,10 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@clawnify/app@0.2.1(@cloudflare/workers-types@4.20260426.1)(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(@phosphor-icons/react@2.1.10(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(hono@4.12.15)(react@19.2.5)':
+  '@clawnify/app@0.4.8(@cloudflare/workers-types@4.20260426.1)(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(@phosphor-icons/react@2.1.10(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(hono@4.12.15)(react@19.2.5)':
     dependencies:
-      '@clawnify/db': 0.4.1(@cloudflare/workers-types@4.20260426.1)
-      '@clawnify/routes': 0.2.2(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(hono@4.12.15)
+      '@clawnify/db': 0.4.3(@cloudflare/workers-types@4.20260426.1)
+      '@clawnify/routes': 0.3.0(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(hono@4.12.15)
       '@hono/zod-openapi': 0.19.10(hono@4.12.15)(zod@3.25.76)
       hono: 4.12.15
     optionalDependencies:
@@ -2462,7 +2462,7 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@clawnify/db@0.4.1(@cloudflare/workers-types@4.20260426.1)':
+  '@clawnify/db@0.4.3(@cloudflare/workers-types@4.20260426.1)':
     dependencies:
       drizzle-orm: 0.45.2(@cloudflare/workers-types@4.20260426.1)
     transitivePeerDependencies:
@@ -2496,7 +2496,7 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@clawnify/routes@0.2.2(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(hono@4.12.15)':
+  '@clawnify/routes@0.3.0(@hono/zod-openapi@0.19.10(hono@4.12.15)(zod@3.25.76))(hono@4.12.15)':
     dependencies:
       '@hono/zod-openapi': 0.19.10(hono@4.12.15)(zod@3.25.76)
       hono: 4.12.15
