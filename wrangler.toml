@@ -1,9 +1,8 @@
-name = "open-property"
-main = "src/server/index.ts"
-compatibility_date = "2025-04-01"
+name = "sill-resident-portal"
+main = "dist/server/index.js"
+compatibility_date = "2026-02-01"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+[triggers]
+crons = ["*/5 * * * *"]
 
-[[d1_databases]]
-binding = "DB"
-database_name = "open-property-db"
-database_id = "local"

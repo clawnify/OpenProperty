@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
-import { after, before, test } from "node:test";
-import { createServer } from "vite";
-
-let vite, s;
-before(async () => {
-  vite = await createServer({ configFile: false, optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true, hmr: false }, appType: "custom" });
-  s = await vite.ssrLoadModule("/src/shared/statement.ts");
-});
-after(async () => { await vite?.close(); });
+import { test } from "node:test";
+import * as s from "../src/shared/statement.ts";
 
 // A German savings-bank export: account details above the header, semicolons,
 // day-first dates, decimal commas, the account holder's own IBAN in its own column.

@@ -1,7 +1,7 @@
 node_modules
 dist
+.dev.vars*
+.env*
+!.env.example
 .wrangler
-.clawnify
-.DS_Store
-*.log
-.dev.vars
+.openai/local*

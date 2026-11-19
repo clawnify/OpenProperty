@@ -13,7 +13,7 @@
 // tenant did not say otherwise (§ 366 BGB in Germany), unless the reference
 // names a month that is open.
 
-import { normalizeAccount, normalizeName, tokens } from "./text";
+import { normalizeAccount, normalizeName, tokens } from "./text.ts";
 
 export interface MatchCharge {
   id: number;

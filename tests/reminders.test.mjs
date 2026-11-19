@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
-import { after, before, test } from "node:test";
-import { createServer } from "vite";
-
-let vite, r;
-before(async () => {
-  vite = await createServer({ configFile: false, optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true, hmr: false }, appType: "custom" });
-  r = await vite.ssrLoadModule("/src/shared/reminders.ts");
-});
-after(async () => { await vite?.close(); });
+import { test } from "node:test";
+import * as r from "../src/shared/reminders.ts";
 
 const charge = (o = {}) => ({
   id: 1, period: "2026-10", due_date: "2026-10-01", amount: 1650, amount_paid: 0, status: "overdue",

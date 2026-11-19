@@ -11,8 +11,8 @@
 // Both run in the browser on the file the person picks; the server receives
 // only the normalised lines.
 
-import { all, descendants, find, parseXml, textAt, type XmlNode } from "./xml";
-import { normalizeAccount, normalizeText } from "./text";
+import { all, descendants, find, parseXml, textAt, type XmlNode } from "./xml.ts";
+import { normalizeAccount, normalizeText } from "./text.ts";
 
 export interface StatementLine {
   /** Booking date, `YYYY-MM-DD`. */
