@@ -9,7 +9,7 @@ export function services(env){
   const db=drizzle(neon(env.DATABASE_URL),{schema});
   const auth=betterAuth({appName:'SiLL',baseURL:env.BETTER_AUTH_URL,secret:env.BETTER_AUTH_SECRET,
     database:drizzleAdapter(db,{provider:'pg',schema,transaction:false}),emailAndPassword:{enabled:true,minPasswordLength:12},
-    trustedOrigins:[env.BETTER_AUTH_URL],rateLimit:{enabled:true,storage:'memory'}});
+    advanced:{ipAddress:{ipAddressHeaders:['cf-connecting-ip']}},trustedOrigins:[env.BETTER_AUTH_URL],rateLimit:{enabled:true,storage:'memory'}});
   return {db,auth};
 }
 export class Problem extends Error {constructor(status,message){super(message);this.status=status;}}

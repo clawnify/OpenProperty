@@ -33,7 +33,8 @@ export async function api(req,env){
  if((p==='/mcp'||p==='/api/mcp')&&post){
   const result=await mcp(await body(req),()=>integration(services(env).db,req));return result?json(result):new Response(null,{status:202});
  }
- const {db,auth}=services(env);
+ const authOrigin=url.origin===env.CUSTOM_ORIGIN?env.CUSTOM_ORIGIN:env.BETTER_AUTH_URL;
+ const {db,auth}=services({...env,BETTER_AUTH_URL:authOrigin});
  const origin=req.headers.get('origin');
  if(!get && origin)demand(origin===env.BETTER_AUTH_URL || origin===url.origin,403,'Origin is not allowed.');
  if(p.startsWith('/api/auth/')){

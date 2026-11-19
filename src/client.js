@@ -75,7 +75,10 @@ async function render(){
    box.querySelectorAll('[data-ticket]').forEach(el=>el.ontoggle=async()=>{if(!el.open)return;const timeline=$('.history',el);try{const events=await api('ticket-history?id='+el.dataset.ticket);timeline.innerHTML='<ul class="timeline">'+events.map(v=>'<li><strong>'+esc(pretty(v.status))+'</strong> <small>'+fmt(v.created_at)+'</small>'+esc(v.note)+'</li>').join('')+'</ul>';}catch(e){timeline.textContent=e.message;}});
    if(home.manager)for(const t of tickets){bindForm('#update-'+t.id,async b=>{await api('ticket-update',{...b,id:t.id});await render();});bindForm('#triage-'+t.id,async(b,f)=>{const v=await api('triage',{id:t.id});statusOut(f,v.message);});}
   }
-  if(sessionStorage.getItem('sill-invite')&&home&&!$('#claim-form')){box.insertAdjacentHTML('afterbegin',claim());wireSetup();}
+  if(sessionStorage.getItem('sill-invite')&&home){
+   const form=$('#claim-form');if(form?.closest('details'))form.closest('details').open=true;
+   else if(!form){box.insertAdjacentHTML('afterbegin',claim());wireSetup();}
+  }
  }catch(e){if(revision===generation)box.innerHTML='<p class="notice error">'+esc(e.message)+'</p>';}
 }
 function ticketHtml(t){return '<details class="entry" data-ticket="'+t.id+'"><summary><span>'+esc(t.subject)+'<small>'+esc(pretty(t.status))+' · '+esc(t.category)+'</small></span><span class="pill '+esc(t.urgency)+'">'+esc(t.urgency)+'</span></summary><p class="wrap">'+esc(t.details)+'</p><div class="history"></div>'+(home.manager?'<form class="form" id="update-'+t.id+'">'+select('Status','status',statuses,t.status)+select('Urgency','urgency',urg,t.urgency)+'<label>Resident update<textarea name="note" maxlength="1500"></textarea></label><button class="btn dark">Save update</button><output role="status"></output></form><form class="form" id="triage-'+t.id+'"><button class="tab">Check support routing</button><output role="status"></output></form>':'')+'</details>';}
