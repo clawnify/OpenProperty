@@ -1,13 +1,6 @@
 import assert from "node:assert/strict";
-import { after, before, test } from "node:test";
-import { createServer } from "vite";
-
-let vite, m;
-before(async () => {
-  vite = await createServer({ configFile: false, optimizeDeps: { noDiscovery: true, include: [] }, server: { middlewareMode: true, hmr: false }, appType: "custom" });
-  m = await vite.ssrLoadModule("/src/shared/matching.ts");
-});
-after(async () => { await vite?.close(); });
+import { test } from "node:test";
+import * as m from "../src/shared/matching.ts";
 
 // Four leases. Marcus owes October; Owen owes the rest of October after a
 // partial; Hannah owes September and October; Sofia and Ethan both owe 1,950.
