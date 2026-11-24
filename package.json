@@ -11,7 +11,7 @@
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "@clawnify/app": "^0.4.8",
+    "@clawnify/app": "^0.4.11",
     "@clawnify/db": "^0.4.3",
     "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-alert-dialog": "^1.1.23",

@@ -8,4 +8,4 @@ allowBuilds:
   # install (and on every deploy build).
   sharp: false
 minimumReleaseAgeExclude:
-  - '@clawnify/app@0.2.1 || 0.4.8'
+  - '@clawnify/app@0.2.1 || 0.4.8 || 0.4.11'
